@@ -1,0 +1,67 @@
+{% load staticfiles %}
+{% load i18n %}
+    <link rel="stylesheet" href="{% static "bootstrap/css/bootstrap.min.css" %}">
+    <link rel="stylesheet" href="{% static "css/font-awesome.min.css" %}">
+    <link rel="stylesheet" href="{% static "dist/css/AdminLTE.min.css" %}">
+    <link rel="stylesheet" href="{% static "dist/css/skins/_all-skins.min.css" %}">
+    <link rel="stylesheet" href="{% static "plugins/iCheck/flat/blue.css" %}">
+    <link rel="stylesheet" href="{%static "css/ionicons.min.css" %}">
+    <link rel="stylesheet" href="{% static "plugins/datatables/dataTables.bootstrap.css"%}">
+    <link rel="stylesheet" href="{% static "css/select2.min.css"%}">
+    <link rel="stylesheet" href="{% static "css/style.css"%}">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="{% static "js/html5shiv.min.js" %}"></script>
+    <script src="{% static "js/respond.min.js" %}"></script>
+    <![endif]-->
+    <style>
+        .nav-tabs {
+            background-color: #eee;
+        }
+        .form-group {
+            margin-top: 25px;
+        }
+    </style>
+
+<div class="container" style="padding: 100px 50px 10px;" >
+    <a title="Popover title"
+            data-container="body" data-toggle="popover" data-placement="left"
+            data-content="左侧的 Popover 中的一些内容">
+        左侧的 Popover
+    </a>
+    <a  title="Popover title"
+            data-container="body" data-toggle="popover" data-placement="top"
+            data-content="顶部的 Popover 中的一些内容">
+        顶部的 Popover
+    </a>
+    <a  title="Popover title"
+            data-container="body" data-toggle="popover" data-placement="bottom"
+            data-content="底部的 Popover 中的一些内容">
+        底部的 Popover
+    </a>
+    <a title="Popover title"
+            data-container="body" data-toggle="popover" data-placement="right"
+            data-content="右侧的 Popover 中的一些内容">
+        右侧的 Popover
+    </a>
+    <a data-toggle="popover" title="Example popover" data-content="test">
+    请悬停在我的上面
+</a>
+</div>
+
+<script src="{%static "plugins/jQuery/jQuery-2.1.4.min.js" %}"></script>
+    <script src="{% static "js/jquery-ui.min.js" %}"></script>
+    <script src="{% static "bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js" %}"></script>
+<script src="{%static "dist/js/app.min.js" %}"></script>
+<script src="{% static "plugins/datatables/jquery.dataTables.min.js" %}"></script>
+<script src="{% static "plugins/datatables/dataTables.bootstrap.min.js" %}"></script>
+<script src="{% static "plugins/iCheck/icheck.min.js" %}"></script>
+<script src="{% static "js/myqccr.js" %}"></script>
+<script src="{% static "js/select2.min.js" %}"></script>
+<script src="{% static "js/jquery.Qalert.js" %}"></script>
+<script src="{% static "bootstrap/js/bootstrap.js" %}"></script>
+<script>
+    $(function () { $("[data-toggle='popover']").popover(); });
+</script>

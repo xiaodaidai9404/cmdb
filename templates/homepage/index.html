@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+
+
+{% load staticfiles %}
+{% load i18n %}
+
+{% block css%}
+    <link rel="stylesheet" href="{% static "bootstrap/css/bootstrap.min.css" %}">
+    <link rel="stylesheet" href="{% static "css/font-awesome.min.css" %}">
+    <link rel="stylesheet" href="{% static "dist/css/AdminLTE.min.css" %}">
+    <link rel="stylesheet" href="{% static "dist/css/skins/_all-skins.min.css" %}">
+    <link rel="stylesheet" href="{% static "plugins/iCheck/flat/blue.css" %}">
+    <link rel="stylesheet" href="{%static "css/ionicons.min.css" %}">
+    <link rel="stylesheet" href="{% static "plugins/datatables/dataTables.bootstrap.css"%}">
+
+    <link rel="stylesheet" href="{% static "css/select2.min.css"%}">
+    <link rel="stylesheet" href="{% static "css/style.css"%}">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="{% static "js/html5shiv.min.js" %}"></script>
+    <script src="{% static "js/respond.min.js" %}"></script>
+    <![endif]-->
+    <style>
+        .nav-tabs {
+            background-color: #eee;
+        }
+        .form-group {
+            margin-top: 25px;
+        }
+/* BACKGROUNDS */
+.gray-bg {
+  background-color: #f3f3f4;
+}
+.white-bg {
+  background-color: #ffffff;
+}
+.navy-bg {
+  background-color: #1ab394;
+  color: #ffffff;
+}
+.blue-bg {
+  background-color: #1c84c6;
+  color: #ffffff;
+}
+.lazur-bg {
+  background-color: #23c6c8;
+  color: #ffffff;
+}
+.yellow-bg {
+  background-color: #f8ac59;
+  color: #ffffff;
+}
+.red-bg {
+  background-color: #ed5565;
+  color: #ffffff;
+}
+.black-bg {
+  background-color: #262626;
+}
+        /* WIDGETS */
+.widget {
+  border-radius: 5px;
+  padding: 15px 20px;
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
+.widget.style1 h2 {
+  font-size: 30px;
+}
+.widget h2,
+.widget h3 {
+  margin-top: 5px;
+  margin-bottom: 0;
+}
+.widget-text-box {
+  padding: 20px;
+  border: 1px solid #e7eaec;
+  background: #ffffff;
+}
+.widget-head-color-box {
+  border-radius: 5px 5px 0 0;
+  margin-top: 10px;
+}
+.widget .flot-chart {
+  height: 100px;
+}
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="fakeloader"></div>
+    <div class="content-wrapper">
+    <section class="content-header">
+        <h1>
+            服务器信息
+        </h1>
+
+        <ol class="breadcrumb">
+              <li class="active"><a href="/"><i class="fa fa-dashboard"></i> 首页</a></li>
+              <li>服务器数量</li>
+        </ol>
+    </section>
+        <div class="row">
+            <div class="col-lg-3">
+                <div class="widget style1 navy-bg">
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <i class="fa fa-desktop fa-5x"></i>
+                        </div>
+                        <div class="col-xs-8 text-right">
+                            <span> all </span>
+                            <h2 class="font-bold" id="all_server">{{ result.all_num }}台</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="widget style1 lazur-bg">
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <i class="fa fa-desktop fa-5x"></i>
+                        </div>
+                        <div class="col-xs-8 text-right">
+                            <span> im </span>
+                            <h2 class="font-bold" id="im_server">{{ result.im_num }}台</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="widget style1 yellow-bg">
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <i class="fa fa-desktop fa-5x"></i>
+                        </div>
+                        <div class="col-xs-8 text-right">
+                            <span> 测试环境 </span>
+                            <h2 class="font-bold" id="java_server">{{ result.test_num }}台</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="widget style1 red-bg">
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <i class="fa fa-desktop fa-5x"></i>
+                        </div>
+                        <div class="col-xs-8 text-right">
+                            <span> db </span>
+                            <h2 class="font-bold" id="db_server">{{ result.db_num }}台</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12">
+            <script src="{% static "js/echarts.min.js"%}"></script>
+        <script src="{% static "echarts/build/source/echarts-all.js" %}"></script>
+            <div id="main" style="width: 600px;height: 400px;float:right;"></div>
+    <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('main'));
+
+        // 指定图表的配置项和数据
+     var option = {
+    title : {
+        text: '服务器最大负载',
+        subtext: 'UPLOAD',
+        x:'right'
+    },
+    tooltip : {
+        trigger: 'item',
+        formatter: "{a} <br/>{b} : {c} ({d}%)"
+    },
+         color : ['red','yellow','green'],
+{#        legend: {#}
+{#            orient: 'vertical',#}
+{#            left: 'left',#}
+{#            data: ['大于8G','大于4G','小于4G']#}
+{#        },#}
+    series : [
+        {
+            name: '负载大小',
+            type: 'pie',
+            radius : '60%',
+            center: ['50%', '50%'],
+            data:[
+                {value:{{ upload.upload_gt_5 }}, name:'负载大于5'},
+                {value:{{ upload.upload_gt_1 }}, name:'负载大于1'},
+                {value:{{ upload.upload_le_1 }}, name:'负载小于1'},
+            ],
+            itemStyle: {
+                emphasis: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0.5)'
+                }
+            }
+        }
+    ]
+};
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+     </script>
+          <div id="memory" style="width: 600px;height: 400px;float:left" ></div>
+    <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        var memoryChart = echarts.init(document.getElementById('memory'));
+
+        // 指定图表的配置项和数据
+     var option = {
+    title : {
+        text: '服务器内存剩余',
+        subtext: 'MEMORY',
+        x:'left'
+    },
+    tooltip : {
+        trigger: 'item',
+        formatter: "{a} <br/>{b} : {c} ({d}%)"
+    },
+         color : ['green','yellow','red'],
+{#        legend: {#}
+{#            orient: 'vertical',#}
+{#            left: 'left',#}
+{#            data: ['大于8G','大于4G','小于4G']#}
+{#        },#}
+    series : [
+        {
+            name: '内存大小',
+            type: 'pie',
+            radius : '60%',
+            center: ['50%', '50%'],
+            data:[
+                {value:{{ data.memory_gt_8g }}, name:'大于8G'},
+                {value:{{ data.memory_gt_4g }}, name:'大于4G'},
+                {value:{{ data.memory_le_4g }}, name:'小于4G'},
+            ],
+            itemStyle: {
+                emphasis: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0.5)'
+                }
+            }
+        }
+    ]
+};
+        // 使用刚指定的配置项和数据显示图表。
+        memoryChart.setOption(option);
+     </script>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block js %}
+<script src="{%static "plugins/jQuery/jQuery-2.1.4.min.js" %}"></script>
+<script src="{% static "js/jquery-ui.min.js" %}"></script>
+<script src="{%static "dist/js/app.min.js" %}"></script>
+<script src="{% static "plugins/datatables/jquery.dataTables.min.js" %}"></script>
+<script src="{% static "plugins/datatables/dataTables.bootstrap.min.js" %}"></script>
+<script src="{% static "plugins/iCheck/icheck.min.js" %}"></script>
+<script src="{% static "js/myqccr.js" %}"></script>
+<script src="{% static "js/select2.min.js" %}"></script>
+<script src="{% static "js/jquery.Qalert.js" %}"></script>
+{% endblock %}

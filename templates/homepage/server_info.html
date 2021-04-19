@@ -1,0 +1,555 @@
+{% extends "base.html" %}
+
+
+{% load staticfiles %}
+{% load i18n %}
+
+{% block css%}
+    <link rel="stylesheet" href="{% static "bootstrap/css/bootstrap.min.css" %}">
+    <link rel="stylesheet" href="{% static "css/font-awesome.min.css" %}">
+    <link rel="stylesheet" href="{% static "dist/css/AdminLTE.min.css" %}">
+    <link rel="stylesheet" href="{% static "dist/css/skins/_all-skins.min.css" %}">
+    <link rel="stylesheet" href="{% static "plugins/iCheck/flat/blue.css" %}">
+    <link rel="stylesheet" href="{%static "css/ionicons.min.css" %}">
+    <link rel="stylesheet" href="{% static "plugins/datatables/dataTables.bootstrap.css"%}">
+
+    <link rel="stylesheet" href="{% static "css/select2.min.css"%}">
+    <link rel="stylesheet" href="{% static "css/style.css"%}">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="{% static "js/html5shiv.min.js" %}"></script>
+    <script src="{% static "js/respond.min.js" %}"></script>
+    <![endif]-->
+    <style>
+        .nav-tabs {
+            background-color: #eee;
+        }
+        .form-group {
+            margin-top: 25px;
+        }
+    </style>
+    <script>
+        function editInfo(hostname,ip,other_ips,config,disk_info,usage) {
+             $('#update_hostname').val(hostname);
+             $('#update_ip').val(ip);
+             $('#update_other_ips').val(other_ips);
+             $('#update_config').val(config);
+             $('#update_disk_info').val(disk_info);
+             $('#update_usage').val(usage);
+             $('#update_hostname').attr('placeholder',hostname);
+             $('#update_ip').attr('placeholder',ip);
+             $('#update_other_ips').attr('placeholder',other_ips);
+             $('#update_config').attr('placeholder',config);
+             $('#update_disk_info').attr('placeholder',disk_info);
+             $('#update_usage').attr('placeholder',usage);
+    }
+     function add_server() {
+        var server_type = $('#server_type').val();
+        var hostname = $('#hostname').val();
+        var ip = $('#ip').val();
+        var other_ips = $('#other_ips').val();
+        var config = $('#config').val();
+        var usage = $('#usage').val();
+        var disk_info = $('#disk_info').val();
+        var buy_date = $('#buy_date').val();
+        var service_action = $('#service_action').val();
+
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/add/server/",
+            data: {"ip":ip,"other_ips":other_ips,"hostname":hostname,"server_type":server_type,"config":config,"usage":usage,"disk_info":disk_info,"buy_date":buy_date,"service_action":service_action,'csrfmiddlewaretoken': getCookie('csrftoken')},
+            success: function (result) {
+                if (result.code!=400) {
+                    alert(result.msg);
+                }
+                window.location.href = "/";
+                location.reload(true);
+            }
+        })
+    }
+    function initExportField() {
+        //初始化所有勾选框为勾选上
+        var permission_list = new Array("export_hostname","export_server_type","export_ip","export_other_ips","export_cpu_info","export_memory_info","export_disk_Info","export_sn","export_usage")
+        for (x in permission_list)
+        {
+            permissionid = permission_list[x]
+            var el = document.getElementById(permissionid)
+            el.checked = true
+        }  
+    }
+    function data_export(){
+        var permission_list = new Array("export_hostname","export_server_type","export_ip","export_other_ips","export_cpu_info","export_memory_info","export_disk_Info","export_sn","export_usage")
+        var check_permission_list = []
+        for (x in permission_list)
+        {
+            permissionid = permission_list[x]
+            var el = document.getElementById(permissionid)
+            if (el.checked == true) {
+                var value = document.getElementById(permissionid).value;
+                check_permission_list.push(value)
+            }
+        }
+        fieldStr = check_permission_list.join(",");
+        console.log(fieldStr)
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/cmdb_export",
+            data: {"export_value":fieldStr,'csrfmiddlewaretoken': getCookie('csrftoken')},
+            success: function (result) {
+                console.log(result)
+                if (result.code==200) {
+                    download_export();
+                }
+        }      
+        })
+    }
+    function download_export(){
+        var url = "http://cmdb.floa.vip/download_excel";
+        var $a = $("<a></a>");
+        $a.attr("href", url);
+        $("body").append($a);
+        $a[0].click();
+        $a.remove();        
+    }   
+    function update_server(){
+        var hostname = $('#update_hostname').val();
+        var ip = $('#update_ip').val();
+        var other_ips = $('#update_other_ips').val();
+        var config = $('#update_config').val();
+        var usage = $('#update_usage').val();
+        var disk_info = $('#update_disk_info').val();
+        var buy_date = $('#update_buy_date').val();
+        var server_type = $('#server_type').val();
+
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/update/server/",
+            data: {"hostname":hostname,"ip":ip,"other_ips":other_ips,"config":config,"usage":usage,"disk_info":disk_info,"buy_date":buy_date,'csrfmiddlewaretoken': getCookie('csrftoken')},
+            success: function (result) {
+                if (result.code!=200) {
+                    alert(result.msg);
+                }
+                load(server_type);
+{#                window.location.href = "/";#}
+{#                location.reload(true);#}
+            }
+        })
+    }
+
+    function del_server(ip) {
+        var c = confirm("确定删除？");
+        if (c==true) {
+            $.ajax({
+                type: "POST",
+                dataType: "json",
+                url: "/del/server/",
+                data: {"ip": ip, 'csrfmiddlewaretoken': getCookie('csrftoken')},
+                success: function (result) {
+                    if (result.code!=200) {
+                        alert(result.msg);
+                    }
+                    window.location.href = "/";
+                    location.replace(location.href);
+                }
+            })
+        }
+    }
+    function load() {
+        var server_type = $('#select_type').val();
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/check/server_info/",
+            data: {"server_type": server_type, 'csrfmiddlewaretoken': getCookie('csrftoken')},
+            success: function (response) {
+                if (response.code == 200) {
+                    console.log(response);
+{#                                                                定义tbody以及将tbody追加为空#}
+                    var tbody = $("#StdoutTable tbody");
+                    tbody.html('');
+{#                                                                插入数据#}
+
+                    if ($('#StdoutTable').hasClass('dataTable')) {
+                        var dttable = $('#StdoutTable').dataTable();
+                        dttable.fnClearTable(); //清空一下table
+                        dttable.fnDestroy(); //还原初始化了的datatable
+                    }
+                    for (var item of response.result) {
+                        var tr = `
+                        <tr role="row" class="">
+                                            <td  style="word-wrap: break-word; word-break: normal;">${item.hostname}</td>
+                                            <td>${item.ip}</td>
+                                            <td style="word-wrap: break-word; word-break: normal;">${item.other_ips}</td>
+                                            <td>${item.config}</td>
+                                            <td>${item.disk_info}</td>
+                                            <td style="word-wrap: break-word; word-break: normal;">${item.usage}</td>
+                                            <td>${item.buy_date}</td>
+                                            <td>${item.sn}</td>
+                                                                                        <td>
+                                                <button type="button" data-toggle="modal" class="btn btn-info btn-xs" data-target="#UpdateServer" onclick="editInfo('${item.hostname}',
+                                                        '${item.ip}','${item.other_ips}','${item.config}','${item.disk_info}','${item.usage}','${item.port}')"><i class="glyphicon glyphicon-pencil"></i>修改</button>
+                                                        <button type="button" class="btn btn-warning btn-xs" name="" onclick="del_server('${ item.ip }')">删除</button>
+                                            </td>
+                                                </tr>`;
+                        tbody.append($(tr));
+                    }
+                    $('#StdoutTable').dataTable();
+                }
+                else {
+                    alert(response.msg);
+                }
+            }
+        })
+    }
+
+{#       function submit_data() {#}
+{#        var database = $('#database').val();#}
+{#        $.ajax({#}
+{#            type: "POST",#}
+{#            dataType: "json",#}
+{#            url: "/search/database/",#}
+{#            data: {"database":database, 'csrfmiddlewaretoken': getCookie('csrftoken')},#}
+{#            success: function (response) {#}
+{#                if (response.code == 200) {#}
+{#                    console.log(response);#}
+                    {#                                            定义tbody以及将tbody追加为空#}
+{#                    var tbody = $("#StdoutTable tbody");#}
+{#                    tbody.html('');#}
+                    {#                                            插入数据#}
+{##}
+{#                    if ($('#StdoutTable').hasClass('dataTable')) {#}
+{#                        var dttable = $('#StdoutTable').dataTable();#}
+{#                        dttable.fnClearTable(); //清空一下table#}
+{#                        dttable.fnDestroy(); //还原初始化了的datatable#}
+{#                    }#}
+{#                    for (var item of response.result) {#}
+{#                        var tr = `#}
+{#                        <tr role="row" class="">#}
+{#                                            <td>${item.hostname}</td>#}
+{#                                            <td>${item.ip}</td>#}
+{#                                            <td style="word-wrap: break-word; word-break: normal;">${item.other_ips}</td>#}
+{#                                            <td>${item.config}</td>#}
+{#                                            <td>${item.disk_info}</td>#}
+{#                                            <td style="word-wrap: break-word; word-break: normal;">${item.usage}</td>#}
+{#                                            <td>${item.buy_date}</td>#}
+{#                                                                                        <td>#}
+{#                                                <button type="button" data-toggle="modal" class="btn btn-info btn-xs" data-target="#UpdateServer" onclick="editInfo('${item.hostname}',#}
+{#                                                        '${item.ip}','${item.other_ips}','${item.config}','${item.disk_info}','${item.usage}','${item.port}')"><i class="glyphicon glyphicon-pencil"></i>修改</button>#}
+{#                                                        <button type="button" class="btn btn-warning btn-xs" name="" onclick="del_server('${ item.ip }')">删除</button>#}
+{#                                            </td>#}
+{#                                                </tr>`;#}
+{#                        tbody.append($(tr));#}
+{#                    }#}
+{#                    $('#StdoutTable').dataTable();#}
+{##}
+{#                }#}
+{#                else {#}
+{#                    alert(response.msg);#}
+{#                }#}
+{#            }#}
+{#        })#}
+{#    }#}
+    </script>
+{% endblock %}
+{% block content %}
+    <div class="fakeloader"></div>
+    <div class="content-wrapper">
+    <section class="content-header">
+        <h1>
+            服务器信息查询
+        </h1>
+
+        <ol class="breadcrumb">
+              <li class="active"><a href="/"><i class="fa fa-dashboard"></i> 首页</a></li>
+              <li>服务器查询</li>
+        </ol>
+    </section>
+         <div class="row">
+                <div class="col-xs-12">
+                    <div id="project-content" class="nav-tabs-custom">
+                        <div class="tab-content">
+                            <div  id="project_manage">
+                                <div class="box-body">
+                                    <div class="col-sm-4">
+                                    <select id="select_type" class="form-control" onchange="load()">
+                                        <option value="all">all</option>
+                                        <option value="im">im</option>
+                                        <option value="test">test</option>
+                                        <option value="db">db</option>
+                                        <option value="java">java</option>
+                                        <option value="data">bigdata</option>
+                                    </select>
+                                    </div>
+                                    <div class="col-sm-4">
+                                    <a href="#AddServer" role="button"  class="btn btn-success" data-toggle="modal">添加服务器</a>
+                                    <a href="#exportData" role="button"  class="btn btn-success" data-toggle="modal" onclick="initExportField()">导出服务器信息</a>
+                                    </div>
+                                </div>
+{#                                    <form class="box-header" style="padding: 0;">#}
+{#                                    <div class="form-inline">#}
+{#                                        <div style="margin-left: 20px" class="form-group">#}
+{#                                            <label for="">数据库搜索</label>#}
+{#                                            <input class="form-control search-host" id="database" type="text" placeholder="数据库搜索" name="database">#}
+{#                                        </div>#}
+{#                                        <div style="margin-left: 20px" class="form-group">#}
+{#                                        <button type="button" class="btn btn-success btn-search" onclick="submit_data()">精确查询</button>#}
+{#                                        </div>#}
+{#                                    </div>#}
+{#                                </form>#}
+                                <div class="input-group col-xs-12">
+                                    <table id="StdoutTable" class="table table-bordered" style="table-layout: fixed"; >
+                                        <thead>
+                                        <tr>
+                                            <th width="10%">名称</th>
+                                            <th width="10%">内网ip</th>
+                                            <th width="10%">其他ip</th>
+                                            <th width="8%">配置详情</th>
+                                            <th width="7%">硬盘</th>
+                                            <th width="20%">部署服务(库)</th>
+                                            <th width="10%">采购时间</th>
+                                            <th width="15%">SN</th>
+                                            <th width="10%">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+{#                                        {% for item in result %}#}
+{#                                        <tr role="row">#}
+{#                                            <td>{{ item.ip }}</td>#}
+{#                                            <td style="word-wrap: break-word; word-break: normal;">{{ item.other_ips }}</td>#}
+{#                                            <td>{{ item.config }}</td>#}
+{#                                            <td>{{ item.disk_info }}</td>#}
+{#                                            <td style="word-wrap: break-word; word-break: normal;">{{ item.usage }}</td>#}
+{#                                            <td style="word-wrap: break-word; word-break: normal;">{{ item.port }}</td>#}
+{#                                            <td><button type="button" class="btn btn-warning btn-xs" name="" onclick="del_server('{{ item.ip }}')">删除</button>#}
+{#                                                <button type="button" data-toggle="modal" class="btn btn-info btn-xs" data-target="#UpdateServer" onclick="editInfo(#}
+{#                                                        '{{ item.ip }}','{{ item.other_ips }}','{{ item.config }}','{{ item.disk_info }}','{{ item.usage }}','{{ item.port }}')"><i class="glyphicon glyphicon-pencil"></i>修改</button>#}
+{#                                            </td>#}
+{#                                        </tr>#}
+{#                                        {% endfor %}#}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+<!-- Modal -->
+    <div class="modal fade" id="AddServer" tabindex="-1" role="dialog" aria-labelledby="addLable" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">添加服务器</h4>
+            </div>
+
+            <div class="tab-content">
+                <div class="tab-pane active">
+                    <form class="form-horizontal" method="post" role="form">{% csrf_token %}
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">服务器类别</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="server_type" class="form-control" placeholder="im">
+                            </div>
+                             <label class="col-sm-4 control-label">服务器名称</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="hostname" class="form-control" placeholder="apk_nginx">
+                            </div>
+                            <label class="col-sm-4 control-label">内网ip</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="ip" class="form-control" placeholder="127.0.0.1">
+                            </div>
+                            <label class="col-sm-4 control-label">其他ip</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="other_ips" class="form-control" placeholder="211.120.22.38,211.120.22.39">
+                            </div>
+                            <label class="col-sm-4 control-label">配置信息</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="config" class="form-control" placeholder="8C8G">
+                            </div>
+                            <label class="col-sm-4 control-label">磁盘大小</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="disk_info" class="form-control" placeholder="800G">
+                            </div>
+                            <label class="col-sm-4 control-label">部署服务</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="usage" class="form-control" placeholder="nginx">
+                            </div>
+                            <label class="col-sm-4 control-label">购买时间</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="buy_date" class="form-control">
+                            </div>
+                            <label class="col-sm-4 control-label">环境选择</label>
+                            <div class="col-sm-6">
+                            <select id="service_action" class="form-control">
+                                        <option value="test">测试环境</option>
+                                        <option value="online">线上环境</option>
+                            </select>
+                                </div>
+                            </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default"
+                                    data-dismiss="modal">关闭</button>
+                            <button type="submit" class="btn btn-primary"
+                                    name="" onclick="add_server()">添加</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+    <div class="modal fade" id="exportData" tabindex="-1" role="dialog" aria-labelledby="exportDatalabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">导出字段</h4>
+            </div>
+            <div class="tab-content">
+                <div class="tab-pane active">
+                    <form class="form-horizontal" method="post" role="form">{% csrf_token %}
+                        <div class="form-group">
+                        <div class="checkbox col-sm-6 col-center-block">
+                            <label><input type="checkbox" name="export_field" value="cpu_info" id="export_cpu_info">cpu</label>
+                        </div>
+                        <div class="checkbox col-sm-6 col-center-block">
+                            <label><input type="checkbox" name="export_field" value="memory_info" id="export_memory_info">内存 </ladnel./////////                                                                                                                                                                                  信息</label>
+                        </div>
+                        <div class="checkbox col-sm-6 col-center-block">
+                        <label><input type="checkbox"  name="export_field" value="server_type" id="export_server_type">类型</label>
+                        </div>
+                         <div class="checkbox col-sm-6 col-center-block">
+                        <label><input type="checkbox"  name="export_field" value="hostname" id="export_hostname">主机名</label>
+                        </div>
+                        <div class="checkbox col-sm-6 col-center-block">
+                        <label><input type="checkbox"  name="export_field" value="ip" id="export_ip">ip</label>
+                        </div>
+                        <div class="checkbox col-sm-6 col-center-block">
+                        <label><input type="checkbox"  name="export_field" value="other_ips" id="export_other_ips"> 外网ip</label>
+                        </div> 
+                        <div class="checkbox col-sm-6 col-center-block">
+                        <label><input type="checkbox"  name="export_field" value="disk_info" id="export_disk_Info"> 磁盘</label>
+                        </div>
+                        <div class="checkbox col-sm-6 col-center-block">
+                        <label><input type="checkbox"  name="export_field" value="sn" id="export_sn">sn</label>
+                        </div>             
+                        <div class="checkbox col-sm-6 col-center-block">
+                        <label><input type="checkbox"  name="export_field" value="usage" id="export_usage"> 用途</label>
+                        </div>                                                                                          
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default"
+                                    data-dismiss="modal">关闭</button>
+                            <button type="button" class="btn btn-primary"
+                                   onclick="data_export()">确定</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+
+
+
+<!-- Modal -->
+    <div class="modal fade" id="UpdateServer" tabindex="-1" role="dialog" aria-labelledby="UpdateLable" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">更改服务器信息</h4>
+            </div>
+
+            <div class="tab-content">
+                <div class="tab-pane active">
+                    <form class="form-horizontal" method="post" role="form">{% csrf_token %}
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">服务器名称</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="update_hostname" class="form-control">
+                            </div>
+                            <label class="col-sm-4 control-label">内网ip</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="update_ip" class="form-control">
+                            </div>
+                            <label class="col-sm-4 control-label">其他ip</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="update_other_ips" class="form-control">
+                            </div>
+                            <label class="col-sm-4 control-label">配置信息</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="update_config" class="form-control">
+                            </div>
+                            <label class="col-sm-4 control-label">磁盘大小</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="update_disk_info" class="form-control">
+                            </div>
+                            <label class="col-sm-4 control-label">部署服务</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="update_usage" class="form-control">
+                            </div>
+                            <label class="col-sm-4 control-label">购买时间</label>
+                            <div class="col-sm-6">
+                                <input type="datetime" id="update_buy_date" class="form-control">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default"
+                                    data-dismiss="modal">关闭</button>
+                            <button type="button" class="btn btn-primary"
+                                    name="" onclick="update_server()" data-dismiss="modal">修改</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+ </div>
+ <body onload="load('all')"></body>
+{% endblock %}
+
+{% block js %}
+<script src="{%static "plugins/jQuery/jQuery-2.1.4.min.js" %}"></script>
+<script src="{% static "js/jquery-ui.min.js" %}"></script>
+<script src="{%static "dist/js/app.min.js" %}"></script>
+<script src="{% static "plugins/datatables/jquery.dataTables.min.js" %}"></script>
+<script src="{% static "plugins/datatables/dataTables.bootstrap.min.js" %}"></script>
+<script src="{% static "plugins/iCheck/icheck.min.js" %}"></script>
+<script src="{% static "js/myqccr.js" %}"></script>
+<script src="{% static "js/select2.min.js" %}"></script>
+<script src="{% static "js/jquery.Qalert.js" %}"></script>
+    <script type="text/javascript">
+{#    $('#StdoutTable').DataTable();#}
+
+{#   //循环执行，每隔10钟执行一次flush()#已改用celery十分钟循环执行}#}
+{#    window.setInterval(flush,600000);#}
+{##}
+{#    function flush() {#}
+{#        $.ajax({#}
+{#            type: "GET",#}
+{#            url: "/zabbix_data_flush/",#}
+{#        })#}
+{#    }#}
+    </script>
+{% endblock %}

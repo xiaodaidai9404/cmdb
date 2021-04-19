@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+
+{% load staticfiles %}
+{% load i18n %}
+
+{% block css%}
+    <link rel="stylesheet" href="{% static "bootstrap/css/bootstrap.min.css" %}">
+    <link rel="stylesheet" href="{% static "css/font-awesome.min.css" %}">
+    <link rel="stylesheet" href="{% static "dist/css/AdminLTE.min.css" %}">
+    <link rel="stylesheet" href="{% static "dist/css/skins/_all-skins.min.css" %}">
+    <link rel="stylesheet" href="{% static "plugins/iCheck/flat/blue.css" %}">
+    <link rel="stylesheet" href="{%static "css/ionicons.min.css" %}">
+    <link rel="stylesheet" href="{% static "plugins/datatables/dataTables.bootstrap.css"%}">
+
+    <link rel="stylesheet" href="{% static "css/select2.min.css"%}">
+    <link rel="stylesheet" href="{% static "css/style.css"%}">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="{% static "js/html5shiv.min.js" %}"></script>
+    <script src="{% static "js/respond.min.js" %}"></script>
+    <![endif]-->
+    <style>
+        .nav-tabs {
+            background-color: #eee;
+        }
+        .form-group {
+            margin-top: 25px;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="fakeloader"></div>
+    <div class="content-wrapper">
+    <section class="content-header">
+        <h1>
+            数据库代理
+        </h1>
+
+        <ol class="breadcrumb">
+              <li class="active"><a href="/"><i class="fa fa-dashboard"></i> 首页</a></li>
+              <li>数据库代理</li>
+        </ol>
+    </section>
+         <div class="row">
+                <div class="col-xs-12">
+                    <div id="project-content" class="nav-tabs-custom">
+                        <div class="tab-content">
+                            <div  id="project_manage">
+                                <div class="box-body">
+                                <div class="input-group col-xs-12">
+                                    <table id="Domaintable" class="table table-bordered" style="table-layout: fixed"; >
+                                        <thead>
+                                        <tr>
+                                            <th width="10%">id</th>
+                                            <th width="10%">代理地址</th>
+                                            <th width="70%">数据库</th>
+                                            <th width="10%">数据库身份</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for item in result %}
+                                        <tr role="row">
+                                            <td>{{ item.id }}</td>
+                                            <td>{{ item.router_name }}</td>
+                                            <td style="word-wrap: break-word; word-break: normal;"> {{ item.databases }}</td>
+                                            {% if item.position == 0 %}
+                                                        <td>Master</td>
+                                                    {% else %}
+                                                        <td>Slave</td>
+                                            {% endif %}
+                                        </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+{% endblock %}
+
+{% block js %}
+<script src="{%static "plugins/jQuery/jQuery-2.1.4.min.js" %}"></script>
+<script src="{% static "js/jquery-ui.min.js" %}"></script>
+<script src="{%static "dist/js/app.min.js" %}"></script>
+<script src="{% static "plugins/datatables/jquery.dataTables.min.js" %}"></script>
+<script src="{% static "plugins/datatables/dataTables.bootstrap.min.js" %}"></script>
+<script src="{% static "plugins/iCheck/icheck.min.js" %}"></script>
+<script src="{% static "js/myqccr.js" %}"></script>
+<script src="{% static "js/select2.min.js" %}"></script>
+<script src="{% static "js/jquery.Qalert.js" %}"></script>
+<script type="text/javascript">
+$('#Domaintable').DataTable();
+</script>
+{% endblock %}

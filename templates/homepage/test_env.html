@@ -1,0 +1,903 @@
+{% extends "base.html" %}
+
+{%load staticfiles%}
+
+{% block css%}
+	<link rel="stylesheet" href="{% static "bootstrap/css/bootstrap.min.css" %}">
+	<link rel="stylesheet" href="{% static "css/font-awesome.min.css" %}">
+	<link rel="stylesheet" href="{% static "dist/css/AdminLTE.min.css" %}">
+	<link rel="stylesheet" href="{% static "dist/css/skins/_all-skins.min.css" %}">
+	<link rel="stylesheet" href="{% static "plugins/iCheck/flat/blue.css" %}">
+	<link rel="stylesheet" href="{%static "css/ionicons.min.css" %}">
+ 	<link rel="stylesheet" href="{% static "plugins/datatables/dataTables.bootstrap.css"%}">
+    <link rel="stylesheet" href="{% static "plugins/datepicker/datepicker.css"%}">
+    <link rel="stylesheet" href="{% static "css/select2.min.css"%}">
+{#	<link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/css/select2.min.css" rel="stylesheet" />#}
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="{% static "js/html5shiv.min.js" %}"></script>
+        <script src="{% static "js/respond.min.js" %}"></script>
+    <![endif]-->
+    <style>
+    .head-box{min-height:100px;}
+    </style>
+    <script>
+        function editInfo(env_name,project_name,project_leader,project_developer) {
+             $('#update_env_name').val(env_name);
+             $('#update_project_name').val(project_name);
+             $('#update_project_leader').val(project_leader);
+             $('#update_project_developer').val(project_developer);
+
+             $('#update_env_name').attr('placeholder',env_name);
+             $('#update_project_name').attr('placeholder',project_name);
+             $('#update_project_leader').attr('placeholder',project_leader);
+             $('#update_project_developer').attr('placeholder',project_developer);
+    }
+
+    function editAddTimeInfo(env_name) {
+          $('#time_env_name').val(env_name);
+    }
+
+    function add_time_env() {
+        var env_name = $('#time_env_name').val();
+        var add_use_day = $('#add_use_day').val();
+
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/env/addtime/",
+            data: {
+                "env_name": env_name,
+                "add_use_day": add_use_day,
+                'csrfmiddlewaretoken': getCookie('csrftoken')
+            },
+            success: function (result) {
+                if (result.code != 200) {
+                    alert(result.msg);
+                }
+                window.location.href = "/";
+                location.reload(true);
+            }
+        })
+    }
+
+    function apply_env(){
+            $.ajax({
+                type: "GET",
+                dataType: "json",
+                url: "/env/apply/",
+                success: function(result) {
+                    if (result.code != 200){
+                        alert(result.msg);
+                    }
+                    else {
+                        console.log(result);
+                        $('#applyTechModal').modal();
+                        counts = result.result.length;
+                        for (i=0;i < counts; i++) {
+                            item = result.result[i]['env_name'];
+                            var varItem = new Option(item, item);
+                            env_name.options.add(varItem);
+                        }
+                    }
+{#                window.location.href = "/";#}
+{#                location.reload(true);#}
+                }
+            })
+    }
+
+    function allot_test_env() {
+        var env_name = $('#env_name').val();
+        var project_name = $('#project_name').val();
+        var project_leader = $('#project_leader').val();
+        var project_developer = $('#project_developer').val();
+        var use_day = $('#use_day').val();
+
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/env/allot/",
+            data: {"env_name":env_name, "project_name":project_name, "project_leader":project_leader, "project_developer":project_developer, "use_day":use_day, 'csrfmiddlewaretoken': getCookie('csrftoken')},
+            success: function (result) {
+                if (result.code!=200) {
+                    alert(result.msg);
+                }
+                window.location.href = "/";
+                location.reload(true);
+            }
+        })
+    }
+
+    function add_test_env() {
+        var env_name = $('#add_env_name').val();
+
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/env/add/",
+            data: {"env_name":env_name, 'csrfmiddlewaretoken': getCookie('csrftoken')},
+            success: function (result) {
+                if (result.code!=200) {
+                    alert(result.msg);
+                }
+                window.location.href = "/";
+                location.reload(true);
+            }
+        })
+    }
+
+    function del_stack(id) {
+        var c = confirm("确定删除？");
+        if (c==true) {
+            $.ajax({
+                type: "POST",
+                dataType: "json",
+                url: "/del/stack/",
+                data: {"id": id, 'csrfmiddlewaretoken': getCookie('csrftoken')},
+                success: function (result) {
+                    if (result.code!=200) {
+                        alert(result.msg);
+                    }
+                    window.location.href = "/";
+                    location.replace(location.href);
+                }
+            })
+        }
+    }
+    function release_env(env_name){
+            var c = confirm("确定释放环境?");
+            if (c==true) {
+                $.ajax({
+                    type: "POST",
+                    dataType: "json",
+                    url: "/env/release/",
+                    data: {
+                        "env_name": env_name,
+                        'csrfmiddlewaretoken': getCookie('csrftoken')
+                    },
+                    success: function (result) {
+                    if (result.code!=200) {
+                        alert(result.msg);
+                    }
+                    window.location.href = "/";
+                    location.replace(location.href);
+                }
+                })
+            }
+
+    }
+    function update_env(){
+        var update_env_name = $('#update_env_name').val();
+        var update_project_name = $('#update_project_name').val();
+        var update_project_leader = $('#update_project_leader').val();
+        var update_project_developer = $('#update_project_developer').val();
+
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/env/update/",
+            data: {
+                'update_env_name':update_env_name,
+                'update_project_name':update_project_name,
+                'update_project_leader':update_project_leader,
+                'update_project_developer':update_project_developer,
+                'csrfmiddlewaretoken': getCookie('csrftoken')
+                    },
+            success: function (result) {
+                if (result.code!=200) {
+                    alert(result.msg);
+                }
+                window.location.href = "/";
+                location.reload(true);
+            }
+        })
+    }
+
+    function write_sync_db(env_name){
+        $('#db_env_name').val(env_name);
+        function write_db_job_log(){
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/job/db/log/",
+            data: {
+                'env_name': env_name,
+                'csrfmiddlewaretoken': getCookie('csrftoken')
+            },
+            success: function (result) {
+                x=document.getElementById("make_log")  //查找元素
+                x.innerHTML=(result.make_log);    //改变内容
+                x.scrollTop = x.scrollHeight;
+            }
+        })
+        }
+
+        function make_statu(){
+        y=document.getElementById('make_statu');
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/job/db/status/",
+            data:{
+                'env_name': env_name,
+                'csrfmiddlewaretoken': getCookie('csrftoken')
+            },
+             success: function (result) {
+                var start_btn = $("#start_btn");
+                var stop_btn = $("#stop_btn");
+                if (result.code==0) {
+                    var statu='构建中';
+                    start_btn.attr("disabled",true);
+                    stop_btn.attr("disabled",false);
+                    window.setInterval(write_db_job_log, 1000);
+                }
+                if (result.code==1) {
+                    var statu='构建成功';
+                    start_btn.attr("disabled",false);
+                    stop_btn.attr("disabled",true);
+                }
+                if (result.code==2) {
+                    var statu = '构建异常';
+                    start_btn.attr("disabled",false);
+                    stop_btn.attr("disabled",true);
+                }
+                y.innerHTML = statu;
+            }
+        })
+        }
+        cron_job_log = window.setInterval(write_db_job_log, 2000);
+        cron_job_statu = window.setInterval(make_statu, 1000);
+    }
+
+
+
+    function stop_sync_db(){
+        var env_name = $('#db_env_name').val();
+        function write_db_job_log(){
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/job/db/log/",
+            data: {
+                'env_name': env_name,
+                'csrfmiddlewaretoken': getCookie('csrftoken')
+            },
+            success: function (result) {
+                x=document.getElementById("make_log")  //查找元素
+                x.innerHTML=(result.make_log);    //改变内容
+                x.scrollTop = x.scrollHeight;
+            }
+        })
+        }
+        function make_statu(){
+        y=document.getElementById('make_statu');
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/job/db/status/",
+            data:{
+                'env_name': env_name,
+                'csrfmiddlewaretoken': getCookie('csrftoken')
+            },
+             success: function (result) {
+                var start_btn = $("#start_btn");
+                var stop_btn = $("#stop_btn");
+                if (result.code==0) {
+                    var statu='构建中';
+                    start_btn.attr("disabled",true);
+                    stop_btn.attr("disabled",false);
+                }
+                if (result.code==1) {
+                    var statu='构建成功';
+                    start_btn.attr("disabled",false);
+                    stop_btn.attr("disabled",true);
+                }
+                if (result.code==2) {
+                    var statu = '构建异常';
+                    start_btn.attr("disabled",false);
+                    stop_btn.attr("disabled",true);
+                }
+                y.innerHTML = statu;
+            }
+        })
+        }
+        $.ajax({
+          type: "POST",
+          dataType: "json",
+          url: "/sync/stop/db/",
+          data:{
+              'env_name': env_name,
+              'csrfmiddlewaretoken': getCookie('csrftoken')
+          },
+          success: function (result) {
+                alert(result.msg);
+                window.setInterval(write_db_job_log, 5000);
+                window.setInterval(make_statu, 2000);
+          }
+        })
+    }
+
+    function sync_db(){
+        var env_name = $('#db_env_name').val();
+        function write_db_job_log(){
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/job/db/log/",
+            data: {
+                'env_name': env_name,
+                'csrfmiddlewaretoken': getCookie('csrftoken')
+            },
+            success: function (result) {
+                x=document.getElementById("make_log")  //查找元素
+                x.innerHTML=(result.make_log);    //改变内容
+                x.scrollTop = x.scrollHeight;
+            }
+        })
+        }
+        function make_statu(){
+        y=document.getElementById('make_statu');
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/job/db/status/",
+            data:{
+                'env_name': env_name,
+                'csrfmiddlewaretoken': getCookie('csrftoken')
+            },
+             success: function (result) {
+                var start_btn = $("#start_btn");
+                var stop_btn = $("#stop_btn");
+                if (result.code==0) {
+                    var statu='构建中';
+                    start_btn.attr("disabled",true);
+                    stop_btn.attr("disabled",false);
+                }
+                if (result.code==1) {
+                    var statu='构建成功';
+                    start_btn.attr("disabled",false);
+                    stop_btn.attr("disabled",true);
+                }
+                if (result.code==2) {
+                    var statu = '构建异常';
+                    start_btn.attr("disabled",false);
+                    stop_btn.attr("disabled",true);
+                }
+                y.innerHTML = statu;
+            }
+        })
+        }
+        $.ajax({
+          type: "POST",
+          dataType: "json",
+          url: "/sync/db/",
+          data:{
+              'env_name': env_name,
+              'csrfmiddlewaretoken': getCookie('csrftoken')
+          },
+          success: function (result) {
+                alert(result.msg);
+                sleep(25000);
+                window.setInterval(write_db_job_log, 5000);
+                window.setInterval(make_statu, 2000);
+          }
+        })
+    }
+
+    function write_sync_java(env_name){
+        $('#java_env_name').val(env_name);
+        function write_java_job_log(){
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/job/java/log/",
+            data: {
+                'env_name': env_name,
+                'csrfmiddlewaretoken': getCookie('csrftoken')
+            },
+            success: function (result) {
+                x=document.getElementById("java_make_log")  //查找元素
+                x.innerHTML=(result.make_log);    //改变内容
+                x.scrollTop = x.scrollHeight;
+            }
+        })
+        }
+        function make_statu(){
+        y=document.getElementById('java_make_statu');
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/job/java/status/",
+            data:{
+                'env_name': env_name,
+                'csrfmiddlewaretoken': getCookie('csrftoken')
+            },
+             success: function (result) {
+                var start_btn = $("#java_start_btn");
+                var stop_btn = $("#java_stop_btn");
+                if (result.code==0) {
+                    var statu='构建中';
+                    start_btn.attr("disabled",true);
+                    stop_btn.attr("disabled",false);
+                }
+                if (result.code==1) {
+                    var statu='构建成功';
+                    start_btn.attr("disabled",false);
+                    stop_btn.attr("disabled",true);
+                }
+                if (result.code==2) {
+                    var statu = '构建异常';
+                    start_btn.attr("disabled",false);
+                    stop_btn.attr("disabled",true);
+                }
+                y.innerHTML = statu;
+            }
+        })
+        }
+        if(cron_java_job_log) window.clearInterval(cron_job_log);
+        if(cron_java_job_statu) window.clearInterval(cron_job_statu);
+        var cron_java_job_log = window.setInterval(write_java_job_log, 10000);
+        var cron_java_job_statu = window.setInterval(make_statu, 1000);
+    }
+
+    function stop_sync_java(){
+        var env_name = $('#java_env_name').val();
+        function write_java_job_log(){
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/job/java/log/",
+            data: {
+                'env_name': env_name,
+                'csrfmiddlewaretoken': getCookie('csrftoken')
+            },
+            success: function (result) {
+                x=document.getElementById("java_make_log")  //查找元素
+                x.innerHTML=(result.make_log);    //改变内容
+                x.scrollTop = x.scrollHeight;
+            }
+        })
+        }
+        function make_statu(){
+        y=document.getElementById('java_make_statu');
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/job/java/status/",
+            data:{
+                'env_name': env_name,
+                'csrfmiddlewaretoken': getCookie('csrftoken')
+            },
+             success: function (result) {
+                var start_btn = $("#java_start_btn");
+                var stop_btn = $("#java_stop_btn");
+                if (result.code==0) {
+                    var statu='构建中';
+                    start_btn.attr("disabled",true);
+                    stop_btn.attr("disabled",false);
+                    window.setInterval(write_java_job_log, 10000);
+                }
+                if (result.code==1) {
+                    var statu='构建成功';
+                    start_btn.attr("disabled",false);
+                    stop_btn.attr("disabled",true);
+                }
+                if (result.code==2) {
+                    var statu = '构建异常';
+                    start_btn.attr("disabled",false);
+                    stop_btn.attr("disabled",true);
+                }
+                y.innerHTML = statu;
+            }
+        })
+        }
+        $.ajax({
+          type: "POST",
+          dataType: "json",
+          url: "/sync/stop/java/",
+          data:{
+              'env_name': env_name,
+              'csrfmiddlewaretoken': getCookie('csrftoken')
+          },
+          success: function (result) {
+                alert(result.msg);
+                window.setInterval(write_java_job_log, 10000);
+                window.setInterval(make_statu, 2000);
+          }
+        })
+    }
+
+    function sync_java(){
+        var env_name = $('#java_env_name').val();
+        function write_java_job_log(){
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/job/java/log/",
+            data: {
+                'env_name': env_name,
+                'csrfmiddlewaretoken': getCookie('csrftoken')
+            },
+            success: function (result) {
+                x=document.getElementById("java_make_log")  //查找元素
+                x.innerHTML=(result.make_log);    //改变内容
+                x.scrollTop = x.scrollHeight;
+            }
+        })
+        }
+        function make_statu(){
+        y=document.getElementById('java_make_statu');
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/job/java/status/",
+            data:{
+                'env_name': env_name,
+                'csrfmiddlewaretoken': getCookie('csrftoken')
+            },
+             success: function (result) {
+                var start_btn = $("#java_start_btn");
+                var stop_btn = $("#java_stop_btn");
+                if (result.code==0) {
+                    var statu='构建中';
+                    start_btn.attr("disabled",true);
+                    stop_btn.attr("disabled",false);
+                }
+                if (result.code==1) {
+                    var statu='构建成功';
+                    start_btn.attr("disabled",false);
+                    stop_btn.attr("disabled",true);
+                }
+                if (result.code==2) {
+                    var statu = '构建异常';
+                    start_btn.attr("disabled",false);
+                    stop_btn.attr("disabled",true);
+                }
+                y.innerHTML = statu;
+            }
+        })
+        }
+        $.ajax({
+          type: "POST",
+          dataType: "json",
+          url: "/sync/java/",
+          data:{
+              'env_name': env_name,
+              'csrfmiddlewaretoken': getCookie('csrftoken')
+          },
+          success: function (result) {
+                alert(result.msg);
+                sleep(25000);
+                window.setInterval(write_java_job_log, 10000);
+                window.setInterval(make_statu, 2000);
+          }
+        })
+    }
+
+    function sleep(numberMillis) {
+        var now = new Date();
+        var exitTime = now.getTime() + numberMillis;
+        while (true) {
+            now = new Date();
+            if (now.getTime() > exitTime)
+                return;
+        }
+    }
+    </script>
+    {% block subcss %}
+    {% endblock %}
+{% endblock %}
+
+{% block content %}
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <h1>
+                测试环境
+                <small>测试环境管理</small>
+            </h1>
+            <ol class="breadcrumb">
+                <li class="active"><a href="/"><i class="fa fa-dashboard"></i> 首页</a></li>
+                <li>测试环境管理</li>
+            </ol>
+        </section>
+        <section class="content">
+            <!-- Small boxes (Stat box) -->
+            <div class="row">
+                <div class="col-xs-12">
+                    {% block subcontent %}
+                        <div id="project-content" class="nav-tabs-custom">
+                            <div class="tab-content">
+                                <div class="box-header row">
+                                    <div class="col-xs-7">
+                                        <a href="#addTechModal" role="button" class="btn btn-success" data-toggle="modal">添加测试环境</a>
+                                        <a onclick="apply_env()" role="button" class="btn btn-success" data-toggle="modal">申请测试环境</a>
+                                    </div>
+                                </div>
+                                <div class="box-body">
+                                    <table id="tech-table" class="table table-bordered table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>测试环境</th>
+                                                <th>项目名</th>
+                                                <th>项目经理</th>
+                                                <th>开发人员</th>
+                                                <th>使用截止日期</th>
+                                                <th>当前状态</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in result %}
+                                                <tr id="{{ item.env_name }}">
+                                                    <td>{{ item.env_name }}</td>
+                                                    <td>{{ item.project_name }}</td>
+                                                    <td>{{ item.project_leader }}</td>
+                                                    <td>{{ item.project_developer }}</td>
+                                                    <td>{{ item.end_time|date:"Y-m-d" }}</td>
+                                                    {% if item.status == 0 %}
+                                                        <td>使用中</td>
+                                                    {% else %}
+                                                        <td>空闲</td>
+                                                    {% endif %}
+                                                    <td>
+                                                        <div class="btn-group">
+                                                            <button type="button" data-toggle="modal" class="btn btn-info btn-xs" data-target="#editTestModal"
+                                                                    onclick="editInfo('{{ item.env_name }}','{{ item.project_name }}'
+                                                                            ,'{{ item.project_leader }}','{{ item.project_developer }}')"><i class="glyphicon glyphicon-pencil"></i>编辑</button>
+                                                            <button type="button" class="btn btn-warning btn-xs" name="" onclick="release_env('{{ item.env_name }}')">释放</button>
+                                                            <button type="button" class="btn btn-warning btn-xs" name="" data-toggle="modal"
+                                                                    data-target="#addTimeModal" onclick="editAddTimeInfo('{{ item.env_name }}')">延时</button>
+                                                            <button type="button" class="btn btn-success btn-xs" name="db" data-toggle="modal" data-target="#syncDbModal"  onclick="write_sync_db('{{ item.env_name }}')">DB同步</button>
+                                                            <button type="button" class="btn btn-success btn-xs" name="java" data-toggle="modal" data-target="#syncJavaModal" onclick="write_sync_java('{{ item.env_name }}')">java同步</button>
+                                                            <button type="button" class="btn btn-success btn-xs disabled" name="im" data-toggle="modal" data-target="#syncImModal"  onclick="write_sync_im('{{ item.env_name }}')">im同步</button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div><!-- /.box-body -->
+                                <!-- 添加脚本modal -->
+                                <div class="modal fade" id="applyTechModal">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                                <h4 class="modal-title">申请测试环境</h4>
+                                            </div>
+                                            <form id="add-tech-form" name="add-tech" role="form" method="post"
+                                                  enctype="multipart/form-data" style="padding:0 10px;">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="_method" value="post">
+                                                <div class="box-body">
+                                                    <div class="form-group">
+                                                        <label>测试环境<i style="color:red;">*</i></label>
+                                                            <div class="col-sm-6 control-group">
+                                                              <select id="env_name" class="selectpicker show-tick form-control">
+                                                              </select>
+                                                            </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>项目名<i style="color:red;">*</i></label>
+                                                        <input type="text" class="form-control name" placeholder="项目名"
+                                                               id="project_name" required>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>项目经理</label>
+                                                        <input type="text" class="form-control name" placeholder="项目经理"
+                                                               id="project_leader" required>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>开发人员</label>
+                                                        <input type="text" class="form-control name" placeholder="开发人员"
+                                                               id="project_developer" required>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>预计开发时间</label>
+                                                        <input type="number" min="1" max="30" class="form-control name" placeholder="预计开发时间"
+                                                                id="use_day" required>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                                                        <button type="submit" class="btn btn-primary" id="btn_submit" onclick="allot_test_env()">新增</button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="modal fade" id="addTechModal">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                                <h4 class="modal-title">添加测试环境</h4>
+                                            </div>
+                                            <form id="add-tech-form" name="add-tech" role="form" method="post"
+                                                  enctype="multipart/form-data" style="padding:0 10px;">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="_method" value="post">
+                                                <div class="box-body">
+                                                    <div class="form-group">
+                                                        <label>测试环境<i style="color:red;">*</i></label>
+                                                        <input type="text" class="form-control name" placeholder="测试环境"
+                                                               id="add_env_name" required>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                                                        <button type="submit" class="btn btn-primary" id="btn_submit" onclick="add_test_env()">新增</button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="modal fade" id="addTimeModal">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                                <h4 class="modal-title">测试环境延时</h4>
+                                            </div>
+                                            <form id="add-tech-form" name="add-tech" role="form" method="post"
+                                                  enctype="multipart/form-data" style="padding:0 10px;">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="_method" value="post">
+                                                <div class="box-body">
+                                                    <div class="form-group">
+                                                        <label>测试环境名称<i style="color:red;">*</i></label>
+                                                        <input type="text" class="form-control name" placeholder="测试环境名称"
+                                                               id="time_env_name" required readonly>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>延长使用时间(天)</label>
+                                                        <input type="number" min="1" max="30" class="form-control name" placeholder="延长时间"
+                                                                id="add_use_day" required>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                                                        <button type="submit" class="btn btn-primary" id="btn_submit" onclick="add_time_env()">延长</button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 编辑技术栈modal -->
+                                <div class="modal fade" id="editTestModal">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                                <h4 class="modal-title">编辑测试环境信息</h4>
+                                            </div>
+                                            <form id="edit-script-form" name="edit-script" role="form" method="post"
+                                                  enctype="multipart/form-data" style="padding:0 10px;">
+                                                {% csrf_token %}
+                                                <input type="hidden" value="put" name="_method">
+                                                <div class="box-body">
+                                                    <div class="form-group">
+                                                        <label>测试环境名称<i style="color:red;">*</i></label>
+                                                        <input type="text" class="form-control name" placeholder="环境名"
+                                                               id="update_env_name" readonly>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>项目名<i style="color:red;">*</i></label>
+                                                        <input type="text" class="form-control name" placeholder="项目名"
+                                                               id="update_project_name">
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>项目经理</label>
+                                                        <input type="text" class="form-control name" placeholder="项目经理"
+                                                               id="update_project_leader">
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>项目开发</label>
+                                                        <input type="text" class="form-control name" placeholder="项目开发"
+                                                               id="update_project_developer">
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                                                        <button type="submit" class="btn btn-primary" onclick="update_env()">更新</button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                         <div class="modal fade" id="syncDbModal">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="clearInterval(cron_job_log);clearInterval(cron_job_statu)">&times;</button>
+                                                <h4 class="modal-title">DB构建</h4>
+                                            </div>
+                                            <form id="add-tech-form" name="add-tech" role="form" method="post"
+                                                  enctype="multipart/form-data" style="padding:0 10px;">
+                                                {% csrf_token %}
+                                                <div class="box-body">
+                                                    <div class="form-group">
+                                                        <p id="make_statu" style="color:red;">未构建</p>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>环境名<i style="color:red;">*</i></label>
+                                                        <input type="text" class="form-control name" placeholder="环境名"
+                                                               id="db_env_name" required>
+                                                    </div>
+                                                    <div class="form-group">
+                                                         <textarea id="make_log" class="form-control" rows="5"></textarea>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-default" id="start_btn" onclick="sync_db()">开始构建</button>
+                                                        <button type="button" class="btn btn-warning" id='stop_btn' onclick="stop_sync_db()">停止构建</button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                         <div class="modal fade" id="syncJavaModal">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                                <h4 class="modal-title">JAVA构建</h4>
+                                            </div>
+                                            <form id="add-tech-form" name="add-tech" role="form" method="post"
+                                                  enctype="multipart/form-data" style="padding:0 10px;">
+                                                {% csrf_token %}
+                                                <div class="box-body">
+                                                    <div class="form-group">
+                                                        <p id="java_make_statu" style="color:red;">未构建</p>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>环境名<i style="color:red;">*</i></label>
+                                                        <input type="text" class="form-control name" placeholder="环境名"
+                                                               id="java_env_name" required>
+                                                    </div>
+                                                    <div class="form-group">
+                                                         <textarea id="java_make_log" class="form-control" rows="5"></textarea>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-default" id="java_start_btn" onclick="sync_java()">开始构建</button>
+                                                        <button type="button" class="btn btn-warning" id='java_stop_btn' onclick="stop_sync_java()">停止构建</button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                    {% endblock %}
+                </div><!-- /col-xs-12 -->
+            </div>
+        </section><!-- /.content -->
+    </div><!-- /.content-wrapper -->
+{% endblock %}
+
+{% block js%}
+    <script src="{%static "plugins/jQuery/jQuery-2.1.4.min.js" %}"></script>
+    <script src="{% static "js/jquery-ui.min.js" %}"></script>
+    <script src="{%static "bootstrap/js/bootstrap.min.js" %}"></script>
+    <script src="{%static "dist/js/app.min.js" %}"></script>
+    <script src="{% static "plugins/datatables/jquery.dataTables.min.js" %}"></script>
+    <script src="{% static "plugins/datatables/dataTables.bootstrap.min.js" %}"></script>
+    <script src="{% static "plugins/iCheck/icheck.min.js" %}"></script>
+    <script src="{% static "js/popModal.js" %}"></script>
+    <script src="{% static "js/myqccr.js" %}"></script>
+    <script src="{% static "plugins/datetimepicker/bootstrap-datetimepicker.min.js" %}"></script>
+    <script src="{% static "plugins/datepicker/bootstrap-datepicker.js" %}"></script>
+    <script src="{% static "plugins/datepicker/locales/bootstrap-datepicker.zh-CN.js" %}"></script>
+
+{#    <script src="http://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js"></script>#}
+    <script src="{% static "js/select2.min.js" %}"></script>
+    <script type="text/javascript">
+    </script>
+{% endblock %}

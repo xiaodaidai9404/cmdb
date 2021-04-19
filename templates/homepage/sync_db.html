@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{%load staticfiles%}
+
+{% block css%}
+	<link rel="stylesheet" href="{% static "bootstrap/css/bootstrap.min.css" %}">
+	<link rel="stylesheet" href="{% static "css/font-awesome.min.css" %}">
+	<link rel="stylesheet" href="{% static "dist/css/AdminLTE.min.css" %}">
+	<link rel="stylesheet" href="{% static "dist/css/skins/_all-skins.min.css" %}">
+	<link rel="stylesheet" href="{% static "plugins/iCheck/flat/blue.css" %}">
+	<link rel="stylesheet" href="{%static "css/ionicons.min.css" %}">
+ 	<link rel="stylesheet" href="{% static "plugins/datatables/dataTables.bootstrap.css"%}">
+    <link rel="stylesheet" href="{% static "plugins/datepicker/datepicker.css"%}">
+    <link rel="stylesheet" href="{% static "css/select2.min.css"%}">
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="{% static "js/html5shiv.min.js" %}"></script>
+        <script src="{% static "js/respond.min.js" %}"></script>
+    <![endif]-->
+    <style>
+    .head-box{min-height:100px;}
+
+    .loader {
+          position: fixed;
+          left: 0px;
+          top: 0px;
+          width: 100%;
+          height: 100%;
+          z-index: 9999;
+         background: url({% static 'image/reload.gif' %}) 50% 50% no-repeat rgb(249, 249, 249);
+    }
+
+
+    </style>
+    <script>
+	//添加同步记录弹窗
+	function syncdb_add(){
+		$('#modal-add-syncdb').modal('show')
+	}
+	//添加同步记录
+	function addsyncdb_confirm(){
+		alert("正在执行中..")
+		$.ajax({
+        		type: "POST",
+        		dataType: "json",
+        		async: false,
+        		data: $('#add-syncdb-form').serialize(),
+        		url: "/add_syncdb/",
+        		success: function(result){
+            		if(result.code == "200"){
+                                $('#sync_detail').text("")
+                                $('#sync_detail').append(result.return_detail)
+				alert("success")
+                                $('#modal-add-syncdb').modal('hide')
+                                window.location.reload() 
+            		}else if(result.code == "404"){
+                		$('#sync_detail').text("")
+                                $('#sync_detail').append(result.return_detail)
+				alert("fail")
+            		}
+        	},
+        	error: function(result) {
+            		if(result.code != "200"){
+                		$('#sync_detail').text("")
+                                $('#sync_detail').append(result.return_detail)
+            		}
+        	}
+    		})
+	}
+	//删除同步记录
+        function delete_records(delete_id){
+		var delete_id = delete_id;
+                $.ajaxSetup({
+  			data: {"csrfmiddlewaretoken": '{{ csrf_token }}'},
+		});
+
+		$.ajax({
+                        type: "POST",
+                        dataType: "json",
+                        async: false,
+                        data: {"delete_id": delete_id},
+                        url: "/delete_records/",
+                        success: function(result){
+                        if(result.code == "200"){
+                                alert("success")
+                                window.location.reload() 
+                        }else if(result.code == "404"){
+                                alert("fail")
+                        }
+                	},
+                	error: function(result) {
+                        if(result.code != "200"){
+				alert("fail")
+                        }
+                	}
+                })
+	}
+
+        function get_perpage(){
+		var perpage = $('#perpage_show').val()
+		$.ajaxSetup({
+                        data: {"csrfmiddlewaretoken": '{{ csrf_token }}'},
+                });
+
+                $.ajax({
+                        type: "POST",
+                        dataType: "json",
+                        async: false,
+                        data: {"perpage": perpage},
+                        url: "/syncdb_list/",
+                        success: function(result){
+                        },
+                        error: function(result) {
+                        }
+                })
+	}
+
+        $(document).ready(function(){
+		var username = '{{ request.user.username }}' 
+                if(username == "wusheng@ipaychat.com" || username == "wuliang@ipaychat.com"){
+			$("[id='sync_delete']").prop("disabled", false); 
+		}else{
+			$("[id='sync_delete']").prop("disabled", true);
+		}
+		
+		var perpage = $('#perpage_show').val()
+		$.ajaxSetup({
+                        data: {"csrfmiddlewaretoken": '{{ csrf_token }}'},
+                });
+
+                $.ajax({
+                        type: "POST",
+                        dataType: "json",
+                        async: true,
+                        data: {"perpage": perpage},
+                        url: "/syncdb_list/",
+                        success: function(result){
+                	},
+                	error: function(result) {
+                	}
+                })
+                
+	})
+    </script>
+    {% block subcss %}
+    {% endblock %}
+{% endblock %}
+
+{% block content %}
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <h1>
+                Mysql 数据库同步
+                <small>数据库同步</small>
+            </h1>
+            <ol class="breadcrumb">
+                <li class="active"><a href="/"><i class="fa fa-dashboard"></i>首页</a></li>
+                <li>Mysql分表生成</li>
+            </ol>
+        </section>
+        <section class="content">
+		<div class="box">
+        <div class="box-header with-border" id="box-header">
+          <h3 class="box-title">
+            <button type="button" class="btn btn-block btn-sm btn-info" id="sync_add" onclick="syncdb_add()">添加</button>
+          </h3>
+
+          <div class="box-tools pull-right">
+            <button type="button" class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip"
+                    title="Collapse">
+              <i class="fa fa-minus"></i></button>
+            <button type="button" class="btn btn-box-tool" data-widget="remove" data-toggle="tooltip" title="Remove">
+              <i class="fa fa-times"></i></button>
+          </div>
+        </div>
+        <div class="box-body">
+          <table class="table table-bordered" id="syncdb_tb">
+            <tr>
+              <th style="width: 10px">
+                  #
+              </th>
+              <th>数据库host</th>
+              <th>被同步库</th>
+              <th>待同步库</th>
+              <th>待同步表</th>
+              <th>模式</th>
+              <th>操作者</th>
+              <th>定时执行</th>
+              <th>操作时间</th>
+              <th>操作</th>
+            </tr>
+	    {% for record in records %}
+            <tr>
+              <td class="record_id">{{ record.id}}</td>
+              <td class="">{{ record.from_dbhost }}:{{ record.from_dbport }} -> {{ record.to_dbhost }}:{{ record.to_dbport }}</td>
+              <td class="record_from_database">{{ record.from_database }}</td>
+              <td class="record_to_database">{{ record.to_database }}</td>
+              <td class="record_tables">{{ record.tables }}</td>
+              <td class="record_pattern">{{ record.pattern }}</td>
+              <td class="record_operator">{{ record.operator }}</td>
+              <td class="record_crontab_task">{{ record.crontab_task }}</td>
+              <td class="record_create_time">{{ record.create_time}}</td>
+              <td class="">
+		<button type="button" class="btn btn-sm btn-danger" id="sync_delete" onclick="delete_records('{{ record.id}}')">删除</button>
+              </td>
+            </tr>
+	    {% endfor %}
+          </table>
+        </div>
+        <!-- 数据库同步表单 --> 
+	{% include "homepage/mysql/sync-adddb.html" %}
+        <!-- /.box-body -->
+        <div class="box-footer clearfix">
+	   <select style="height:30px;" id="perpage_show" onchange="get_perpage()">
+  		<option value="10">10</option>
+  		<option value="30">30</option>
+  		<option value="50">50</option>
+  		<option value="100">100</option>
+	  </select>
+          <ul class="pagination pagination-sm no-margin pull-right">
+            {% if records.has_previous %}
+            <li><a href="?page={{ records.previous_page_number }}">&laquo;</a></li>
+            {% else %}
+            <li><a href="#" aria-disabled="true">&laquo;</a></li>
+            {% endif %}
+            {% for page in records.paginator.page_range %}
+            {% if page == records.number %}
+            <li><a href="?page={{ page }}" class="bg-light-blue-active color-palette">{{ page }}</a></li>
+            {% else %}
+            <li><a href="?page={{ page }}" class="">{{ page }}</a></li>
+            {% endif%}
+            {% endfor %}
+            {% if hosts.has_next %}
+            <li><a href="?page={{ records.next_page_number }}">&raquo;</a></li>
+            {% else %}
+            <li><a href="#" aria-disabled="true">&raquo;</a></li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+      <!-- /.row -->
+        </section><!-- /.content -->
+    </div><!-- /.content-wrapper -->
+{% endblock %}
+
+<script>
+</script>
+
+{% block js%}
+    <script src="{%static "plugins/jQuery/jQuery-2.1.4.min.js" %}"></script>
+    <script src="{% static "js/jquery-ui.min.js" %}"></script>
+    <script src="{%static "bootstrap/js/bootstrap.min.js" %}"></script>
+    <script src="{%static "dist/js/app.min.js" %}"></script>
+    <script src="{% static "plugins/datatables/jquery.dataTables.min.js" %}"></script>
+    <script src="{% static "plugins/datatables/dataTables.bootstrap.min.js" %}"></script>
+    <script src="{% static "plugins/iCheck/icheck.min.js" %}"></script>
+    <script src="{% static "js/popModal.js" %}"></script>
+    <script src="{% static "js/myqccr.js" %}"></script>
+    <script src="{% static "dist/js/custom/database.js" %}"></script>
+    <script src="{% static "plugins/datetimepicker/bootstrap-datetimepicker.min.js" %}"></script>
+    <script src="{% static "plugins/datepicker/bootstrap-datepicker.js" %}"></script>
+    <script src="{% static "plugins/datepicker/locales/bootstrap-datepicker.zh-CN.js" %}"></script>
+
+{#    <script src="http://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js"></script>#}
+    <script src="{% static "js/select2.min.js" %}"></script>
+    <script type="text/javascript">
+    </script>
+{% endblock %}

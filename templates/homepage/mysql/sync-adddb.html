@@ -1,0 +1,151 @@
+<div class="modal fade" id="modal-add-syncdb">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span></button>
+        <h4 class="box-title">同步</h4>
+      </div>
+      <div class="add-host" id="add-host">
+          <form class="form-horizontal" method="post" id="add-syncdb-form">
+                {% csrf_token %}
+                <div class="box-body">
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label"></label>
+                    <div class="col-sm-6">
+                      <input type="hidden" class="form-control" id="add_operator" name="add_operator" value="{{ request.user.username }}" required>
+                    </div>
+                    <!-- /.input group -->
+                  </div>
+		  <div class="form-group">
+                    <label class="col-sm-3 control-label">同步模式</label>
+                    <div class="col-sm-6">
+                    <select class="form-control select2" data-placeholder="选择同步模式"
+                        style="width: 100%;" id="add_pattern" name="add_pattern">
+                      <option value="test">测试库间</option>
+		      <option value="product">线上库间</option>
+		      <option value="testtoproduct">测试到线上库</option>
+		      <option value="producttotest">线上到测试库</option>
+                    </select>
+                    <br>
+                    *<font color=red>若涉及到线上库同步，最好由运维操作</font>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label">被同步数据库host</label>
+                    <div class="col-sm-6">
+                      <input type="text" class="form-control" data-inputmask="'alias': 'ip'" data-mask id="add_fromdb_host" name="add_fromdb_host" required>
+                    </div>
+                    <!-- /.input group -->
+                  </div>
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label">被同步数据库端口</label>
+                    <div class="col-sm-6">
+                      <input type="text" class="form-control" id="add_fromdb_port" name="add_fromdb_port" value="3306">
+                    </div>
+                  </div>
+                  <!-- /.form group -->
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label">待同步数据库host</label>
+		    <div class="col-sm-6">
+                      <input type="text" class="form-control" data-inputmask="'alias': 'ip'" data-mask id="add_todb_host" name="add_todb_host" required>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label">待同步数据库端口</label>
+                    <div class="col-sm-6">
+                      <input type="text" class="form-control" id="add_todb_port" name="add_todb_port" value="3306">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label">同步数据</label>
+                    <div class="col-sm-6">
+                      <input type="checkbox" id="issyncdata" name="issyncdata" value="-d"><br>
+		      <font color=red>选中则只同步表结构 </font>
+                    </div>
+                  </div>
+		  <div class="form-group">
+                    <label class="col-sm-3 control-label">被同步数据库库名</label>
+                    <div class="col-sm-6">
+                      <input type="text" class="form-control" id="add_fromdatabase" name="add_fromdatabase" placeholder="yysh_audit">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label">被同步数据库表名</label>
+                    <div class="col-sm-6">
+                      <input type="text" class="form-control" id="add_fromdb_tables" name="add_fromdb_tables" placeholder="非必填，多个表以空格分隔">
+                    </div>
+                  </div>
+		  <div class="form-group">
+                    <label class="col-sm-3 control-label">待同步数据库名</label>
+                    <div class="col-sm-6">
+                      <input type="text" class="form-control" id="add_todatabase" name="add_todatabase">
+                    </div>
+                  </div>
+                  <!--<div class="form-group">
+                    <label class="col-sm-3 control-label">定时执行</label>
+                    <div class="col-sm-6">
+                      <input type="text" class="form-control" id="add_crontab_task" name="add_crontab_task" placeholder="0 5 * * *,每天凌晨五点执行">
+                    </div>
+                  </div>-->
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label">执行任务名称</label>
+                    <div class="col-sm-6">
+                      <input type="text" class="form-control" id="add_task_name" name="add_task_name" value="databasesync" readonly>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label">执行任务</label>
+                    <div class="col-sm-6">
+                      <input type="text" class="form-control" id="add_task" name="add_task" value="mysql_submeter.tasks.sync_db" readonly>
+                    </div>
+                  </div>
+                  <div class="form-group">
+		    <label class="col-sm-3 control-label">执行方式</label>
+                    <div class="col-sm-6">
+			<input type="radio" id="add_type_interval" name="add_type" value="0" class="add_type_interval">循环执行
+   			<input type="radio" id="add_type_crontab" name="add_type" value="1" class="add_type_crontab">定时执行
+                        <input type="radio" id="add_type_immedia" name="add_type" value="2" class="add_type_immedia" checked>立即执行
+                    </div>
+ 		  </div>
+                  <div class="form-group" id="div_crontab" hidden>
+                    <label class="col-sm-3 control-label">crontab</label>
+                    <div class="col-sm-6">
+                    	<select name="crontab_id" id="crontab_id" style="height:30px;">
+                                <option value="">----------</option>
+				{% for crontab in crontabs %}
+				<option value="{{ crontab.0 }}-{{ crontab.1 }} {{ crontab.2 }} {{ crontab.3 }} {{ crontab.4 }} {{ crontab.5 }}">{{ crontab.1 }} {{ crontab.2 }} {{ crontab.3 }} {{ crontab.4 }} {{ crontab.5 }}</option>
+				{% endfor %}		
+			</select>
+                    </div>
+                  </div>
+                  <div class="form-group" id="div_interval" hidden>
+                    <label class="col-sm-3 control-label">interval</label>
+                    <div class="col-sm-6">
+                        <select name="interval_id" id="interval_id" style="height:30px;">
+				<option value="">----------</option>
+                                {% for interval in intervals %}
+                                <option value="{{ interval.0 }}-{{ interval.1 }} {{ interval.2 }}">every {{ interval.1 }} {{ interval.2 }}</option>
+                                {% endfor %}  
+                        </select>
+                    </div>
+                  </div>
+		  <div class="form-group">
+                    <label class="col-sm-3 control-label"></label>
+                    <div class="col-sm-6" id="sync_detail">
+                       
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-default pull-left" data-dismiss="modal">取消</button>
+                  <button type="button" class="btn btn-primary btn-addsyncdb-confirm" onclick="addsyncdb_confirm()">确认</button>
+                </div>
+              </form>
+        </div>
+        <!-- /.col -->
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>

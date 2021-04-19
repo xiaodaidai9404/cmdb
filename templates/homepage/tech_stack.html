@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{%load staticfiles%}
+
+{% block css%}
+	<link rel="stylesheet" href="{% static "bootstrap/css/bootstrap.min.css" %}">
+	<link rel="stylesheet" href="{% static "css/font-awesome.min.css" %}">
+	<link rel="stylesheet" href="{% static "dist/css/AdminLTE.min.css" %}">
+	<link rel="stylesheet" href="{% static "dist/css/skins/_all-skins.min.css" %}">
+	<link rel="stylesheet" href="{% static "plugins/iCheck/flat/blue.css" %}">
+	<link rel="stylesheet" href="{%static "css/ionicons.min.css" %}">
+ 	<link rel="stylesheet" href="{% static "plugins/datatables/dataTables.bootstrap.css"%}">
+    <link rel="stylesheet" href="{% static "plugins/datepicker/datepicker.css"%}">
+    <link rel="stylesheet" href="{% static "css/select2.min.css"%}">
+{#	<link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/css/select2.min.css" rel="stylesheet" />#}
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="{% static "js/html5shiv.min.js" %}"></script>
+        <script src="{% static "js/respond.min.js" %}"></script>
+    <![endif]-->
+    <style>
+    .head-box{min-height:100px;}
+    </style>
+    <script>
+        function editInfo(name,info,download_url) {
+             $('#update_scripts_name').val(name);
+             $('#update_info').val(info);
+             $('#update_url').val(download_url);
+             $('#update_scripts_name').attr('placeholder',name);
+             $('#update_info').attr('placeholder',info);
+             $('#update_url').attr('placeholder',download_url);
+    }
+
+    function add_stack() {
+        var name = $('#scripts_name').val();
+        var url = $('#download_url').val();
+        var info = $('#info').val();
+
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/add/stack/",
+            data: {"name":name, "download_url":url, "info":info, 'csrfmiddlewaretoken': getCookie('csrftoken')},
+            success: function (result) {
+                if (result.code!=200) {
+                    alert(result.msg);
+                }
+                window.location.href = "/";
+                location.reload(true);
+            }
+        })
+    }
+    function del_stack(id) {
+        var c = confirm("确定删除？");
+        if (c==true) {
+            $.ajax({
+                type: "POST",
+                dataType: "json",
+                url: "/del/stack/",
+                data: {"id": id, 'csrfmiddlewaretoken': getCookie('csrftoken')},
+                success: function (result) {
+                    if (result.code!=200) {
+                        alert(result.msg);
+                    }
+                    window.location.href = "/";
+                    location.replace(location.href);
+                }
+            })
+        }
+    }
+    function update_stack(){
+        var update_name = $('#update_scripts_name').val();
+        var update_url = $('#update_url').val();
+        var update_info = $('#update_info').val();
+
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/update/stack/",
+            data: {"name":update_name, "download_url":update_url, "info":update_info,'csrfmiddlewaretoken': getCookie('csrftoken')},
+            success: function (result) {
+                if (result.code!=200) {
+                    alert(result.msg);
+                }
+                window.location.href = "/";
+                location.reload(true);
+            }
+        })
+    }
+    </script>
+    {% block subcss %}
+    {% endblock %}
+{% endblock %}
+
+{% block content %}
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <h1>
+                其它资源
+                <small>技术栈管理</small>
+            </h1>
+            <ol class="breadcrumb">
+                <li class="active"><a href="/"><i class="fa fa-dashboard"></i> 首页</a></li>
+                <li>技术栈管理</li>
+            </ol>
+        </section>
+        <section class="content">
+            <!-- Small boxes (Stat box) -->
+            <div class="row">
+                <div class="col-xs-12">
+                    {% block subcontent %}
+                        <div id="project-content" class="nav-tabs-custom">
+                            <div class="tab-content">
+                                <div class="box-header row">
+                                    <div class="col-xs-7">
+                                        <a href="#addTechModal" role="button" class="btn btn-success" data-toggle="modal">添加技术栈</a>
+                                    </div>
+                                </div>
+                                <div class="box-body">
+                                    <table id="tech-table" class="table table-bordered table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>技术栈名称</th>
+                                                <th>描述</th>
+                                                <th>下载链接</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for tech in result %}
+                                                <tr id="{{ tech.id }}">
+                                                    <td>{{ tech.name }}</td>
+                                                    <td>{{ tech.info }}</td>
+{#                                                    <td>{{ tech.create_time|date:"Y-m-d H:i:s" }}</td>#}
+                                                    <td>{{ tech.download_url }}</td>
+                                                    <td>
+                                                        <div class="btn-group">
+{#                                                            <a href="#editTechModal" class="btn btn-success btn-xs"#}
+{#                                                               role="button" data-tech-id="{{ tech.id }}" data-toggle="modal">#}
+{#                                                                <i class="fa fa-fw fa-cog"></i>编辑</a>#}
+                                                            <button type="button" data-toggle="modal" class="btn btn-info btn-xs" data-target="#editTechModal"
+                                                                    onclick="editInfo('{{ tech.name }}','{{ tech.info}}','{{ tech.download_url }}')"><i class="glyphicon glyphicon-pencil"></i>编辑</button>
+                                                            <button type="button" class="btn btn-warning btn-xs" name="" onclick="del_stack('{{ tech.id }}')">删除</button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div><!-- /.box-body -->
+                                <!-- 添加脚本modal -->
+                                <div class="modal fade" id="addTechModal">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                                <h4 class="modal-title">添加技术栈</h4>
+                                            </div>
+                                            <form id="add-tech-form" name="add-tech" role="form" method="post"
+                                                  enctype="multipart/form-data" style="padding:0 10px;">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="_method" value="post">
+                                                <div class="box-body">
+                                                    <div class="form-group">
+                                                        <label>技术栈名称<i style="color:red;">*</i></label>
+                                                        <input type="text" class="form-control name" placeholder="脚本名"
+                                                               id="scripts_name" required>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>下载链接<i style="color:red;">*</i></label>
+                                                        <input type="text" class="form-control name" placeholder="下载链接"
+                                                               id="download_url" required="http://.*\.ipaychat.com.*">
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>描述</label>
+                                                        <textarea class="form-control tech-desc" id="info" rows="3"></textarea>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                                                        <button type="submit" class="btn btn-primary" id="btn_submit" onclick="add_stack()">新增</button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 编辑技术栈modal -->
+                                <div class="modal fade" id="editTechModal">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                                <h4 class="modal-title">编辑技术栈</h4>
+                                            </div>
+                                            <form id="edit-script-form" name="edit-script" role="form" method="post"
+                                                  enctype="multipart/form-data" style="padding:0 10px;">
+                                                {% csrf_token %}
+                                                <input type="hidden" value="put" name="_method">
+                                                <input type="hidden" value="" name="tech_id" class="tech-id">
+                                                <div class="box-body">
+                                                    <div class="form-group">
+                                                        <label>技术栈名称<i style="color:red;">*</i></label>
+                                                        <input type="text" class="form-control name" placeholder="脚本名"
+                                                               id="update_scripts_name" readonly>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>下载链接<i style="color:red;">*</i></label>
+                                                        <input type="text" class="form-control name" placeholder="下载链接"
+                                                               id="update_url" required="http://.*\.ipaychat.com.*">
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>技术栈描述</label>
+                                                        <textarea class="form-control tech-desc" id="update_info" rows="3"></textarea>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                                                        <button type="submit" class="btn btn-primary" onclick="update_stack()">更新</button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endblock %}
+                </div><!-- /col-xs-12 -->
+            </div>
+        </section><!-- /.content -->
+    </div><!-- /.content-wrapper -->
+{% endblock %}
+
+{% block js%}
+    <script src="{%static "plugins/jQuery/jQuery-2.1.4.min.js" %}"></script>
+    <script src="{% static "js/jquery-ui.min.js" %}"></script>
+    <script src="{%static "bootstrap/js/bootstrap.min.js" %}"></script>
+    <script src="{%static "dist/js/app.min.js" %}"></script>
+    <script src="{% static "plugins/datatables/jquery.dataTables.min.js" %}"></script>
+    <script src="{% static "plugins/datatables/dataTables.bootstrap.min.js" %}"></script>
+    <script src="{% static "plugins/iCheck/icheck.min.js" %}"></script>
+    <script src="{% static "js/popModal.js" %}"></script>
+    <script src="{% static "js/myqccr.js" %}"></script>
+    <script src="{% static "plugins/datetimepicker/bootstrap-datetimepicker.min.js" %}"></script>
+    <script src="{% static "plugins/datepicker/bootstrap-datepicker.js" %}"></script>
+    <script src="{% static "plugins/datepicker/locales/bootstrap-datepicker.zh-CN.js" %}"></script>
+
+{#    <script src="http://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js"></script>#}
+    <script src="{% static "js/select2.min.js" %}"></script>
+    <script type="text/javascript">
+    </script>
+{% endblock %}

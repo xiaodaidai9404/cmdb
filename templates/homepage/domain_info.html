@@ -1,0 +1,342 @@
+{% extends "base.html" %}
+
+
+{% load staticfiles %}
+{% load i18n %}
+
+{% block css%}
+    <link rel="stylesheet" href="{% static "bootstrap/css/bootstrap.min.css" %}">
+    <link rel="stylesheet" href="{% static "css/font-awesome.min.css" %}">
+    <link rel="stylesheet" href="{% static "dist/css/AdminLTE.min.css" %}">
+    <link rel="stylesheet" href="{% static "dist/css/skins/_all-skins.min.css" %}">
+    <link rel="stylesheet" href="{% static "plugins/iCheck/flat/blue.css" %}">
+    <link rel="stylesheet" href="{%static "css/ionicons.min.css" %}">
+    <link rel="stylesheet" href="{% static "plugins/datatables/dataTables.bootstrap.css"%}">
+
+    <link rel="stylesheet" href="{% static "css/select2.min.css"%}">
+    <link rel="stylesheet" href="{% static "css/style.css"%}">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="{% static "js/html5shiv.min.js" %}"></script>
+    <script src="{% static "js/respond.min.js" %}"></script>
+    <![endif]-->
+    <style>
+        .nav-tabs {
+            background-color: #eee;
+        }
+        .form-group {
+            margin-top: 25px;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="fakeloader"></div>
+    <div class="content-wrapper">
+    <section class="content-header">
+        <h1>
+            域名证书
+        </h1>
+
+        <ol class="breadcrumb">
+              <li class="active"><a href="/"><i class="fa fa-dashboard"></i> 首页</a></li>
+              <li>域名证书</li>
+        </ol>
+    </section>
+         <div class="row">
+                <div class="col-xs-12">
+                    <div id="project-content" class="nav-tabs-custom">
+                        <div class="tab-content">
+                            <div  id="project_manage">
+                                <div class="box-body">
+                                    <div class="col-sm-4">
+                                    <a href="#AddDomain" role="button"  class="btn btn-success" data-toggle="modal">新增域名</a>
+                                    </div>
+                                <div class="input-group col-xs-12">
+                                    <table id="Domaintable" class="table table-bordered" style="table-layout: fixed"; >
+                                        <thead>
+                                        <tr>
+                                            <th width="10%">id</th>
+                                            <th width="10%">域名</th>
+                                            <th width="15%">域名到期时间(标红行为一个月内到期)</th>
+                                            <th width="15%">证书到期时间(标黄行为没有证书)</th>
+                                            <th width="20%">检测域名</th>
+                                            <th width="10%">域名作用</th>
+                                            <th width="20%">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for item in result %}
+                                        <tr role="row">
+                                            <td>{{ item.id }}</td>
+                                            <td>{{ item.domain_name }}</td>
+                                            <td id="end_date">{{ item.end_date }}</td>
+                                            <td>{{ item.ssl_end_date }}</td>
+                                            <td>{{ item.ssl_domain_name }}</td>
+                                            <td>{{ item.usage }}</td>
+                                            <td><button type="button" class="btn btn-warning" name="" onclick="del_domain('{{ item.id }}')">删除</button>
+                                                <button type="button" data-toggle="modal" class="btn btn-info" data-target="#UpdateDomain" onclick="editInfo(
+                                                        '{{ item.id }}','{{ item.domain_name }}','{{ item.end_date }}','{{ item.ssl_start_date }}','{{ item.ssl_end_date }}','{{ item.ssl_domain_name }}','{{ item.usage }}')"><i class="glyphicon glyphicon-pencil"></i>修改</button>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    <!-- Modal -->
+    <div class="modal fade" id="AddDomain" tabindex="-1" role="dialog" aria-labelledby="addLable" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">新增域名</h4>
+            </div>
+
+            <div class="tab-content">
+                <div class="tab-pane active">
+                    <form class="form-horizontal" method="post" role="form">{% csrf_token %}
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">域名名称</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="add_domain_name" class="form-control" placeholder="96friend.cn">
+                            </div>
+                            <label class="col-sm-4 control-label">域名购买时间</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="add_start_date" class="form-control" placeholder="2019-01-01">
+                            </div>
+                            <label class="col-sm-4 control-label">域名过期时间</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="add_end_date" class="form-control" placeholder="2099-01-01">
+                            </div>
+                            <label class="col-sm-4 control-label">ssl监测域名</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="add_ssl_domain_name" class="form-control" placeholder="api.96friend.cn">
+                            </div>
+                            <label class="col-sm-4 control-label">证书购买时间</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="add_ssl_start_date" class="form-control" placeholder="没有证书为空">
+                            </div>
+                            <label class="col-sm-4 control-label">证书过期时间</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="add_ssl_end_date" class="form-control" placeholder="没有证书为空">
+                            </div>
+                            <label class="col-sm-4 control-label">域名用途</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="add_usage" class="form-control" placeholder="青柠直播,富聊">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <div class="col-sm-8">
+                            <button type="button" class="btn btn-default"
+                                    data-dismiss="modal">关闭</button>
+                            <button type="button" class="btn btn-primary"
+                                    name="" onclick="add_domain()">新增</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="UpdateDomain" tabindex="-1" role="dialog" aria-labelledby="addLable" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">修改域名信息</h4>
+            </div>
+
+            <div class="tab-content">
+                <div class="tab-pane active">
+                    <form class="form-horizontal" method="post" role="form">{% csrf_token %}
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">id</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="update_id" class="form-control" disabled="disabled">
+                            </div>
+                            <label class="col-sm-4 control-label">域名名称</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="update_domain_name" class="form-control">
+                            </div>
+                            <label class="col-sm-4 control-label">域名过期时间</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="update_domain_end_date" class="form-control">
+                            </div>
+                            <label class="col-sm-4 control-label">证书购买时间</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="update_ssl_start_date" class="form-control">
+                            </div>
+                            <label class="col-sm-4 control-label">证书过期时间</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="update_ssl_end_date" class="form-control">
+                            </div>
+                            <label class="col-sm-4 control-label">ssl检测域名</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="update_ssl_domain_name" class="form-control">
+                            </div>
+                            <label class="col-sm-4 control-label">usage</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="update_usage" class="form-control">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <div class="col-sm-8">
+                            <button type="button" class="btn btn-default"
+                                    data-dismiss="modal">关闭</button>
+                            <button type="button" class="btn btn-primary"
+                                    name="" onclick="update_domain()">修改</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+<script src="{%static "plugins/jQuery/jQuery-2.1.4.min.js" %}"></script>
+<script src="{% static "js/jquery-ui.min.js" %}"></script>
+<script src="{%static "dist/js/app.min.js" %}"></script>
+<script src="{% static "plugins/datatables/jquery.dataTables.min.js" %}"></script>
+<script src="{% static "plugins/datatables/dataTables.bootstrap.min.js" %}"></script>
+<script src="{% static "plugins/iCheck/icheck.min.js" %}"></script>
+<script src="{% static "js/myqccr.js" %}"></script>
+<script src="{% static "js/select2.min.js" %}"></script>
+<script src="{% static "js/jquery.Qalert.js" %}"></script>
+        <script type="text/javascript">
+    var tb = document.getElementById('Domaintable');    // table 的 id
+    var rows = tb.rows;                          // 获取表格所有行
+    for(var i = 0; i<rows.length; i++ ) {
+        for (var j = 1; j < 3; j++) {
+            // 遍历该行的 td
+            var expire_time = rows[i].cells[j].innerHTML;
+            if (diff_domain(expire_time) == 0 ){
+                rows[i].cells[j].style.color = "red";
+            }
+            // }
+        }
+    }
+
+    function diff_domain(expire_time) {
+        var mydate = new Date();
+        date_now = mydate.toLocaleDateString();
+        date_now_str = Date.parse(date_now);
+        date_expire_str = Date.parse(expire_time);
+        diff_day = (date_expire_str - date_now_str)/68400/1000;
+        if (diff_day < 30) {
+            return 0;
+        }
+    }
+
+    $('#Domaintable').DataTable();
+
+    function del_domain(id){
+        var c = confirm("确定删除？");
+        var delete_url = "/domain/"+id+"/"
+        if (c==true) {
+            $.ajax({
+                type: "DELETE",
+                dataType: "json",
+                url: delete_url,
+                success: function (result) {
+                    console.log(result)
+{#                    if (result.code!=200) {#}
+{#                        alert(result.msg);#}
+{#                    }#}
+                    window.location.href = "/";
+                    location.replace(location.href);
+                }
+            })
+        }
+    }
+
+    function add_domain(){
+        var domain_name = $('#add_domain_name').val();
+        var start_date = $('#add_start_date').val();
+        var end_date = $('#add_end_date').val();
+        var ssl_domain_name = $('#add_ssl_domain_name').val();
+        var ssl_start_date = $('#add_ssl_start_date').val();
+        var ssl_end_date = $('#add_ssl_end_date').val();
+        var usage = $('#add_usage').val();
+
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/domain/",
+            data: {"domain_name": domain_name, "start_date": start_date, "end_date": end_date, "ssl_domain_name": ssl_domain_name,
+                "ssl_start_date": ssl_start_date, "ssl_end_date":ssl_end_date, "usage": usage, 'csrfmiddlewaretoken': getCookie('csrftoken')},
+            success: function (result) {
+                console.log(result);
+                window.location.href = "/";
+                location.replace(location.href);
+{#                if (result.code!=200) {#}
+{#                    alert(result.msg);#}
+{#                }#}
+{#                window.location.href = "/";#}
+{#                location.reload(true);#}
+            },
+            error: function () {
+                alert('ajax函数调用失败');
+            }
+        })
+    }
+
+    function editInfo(id,domain_name,end_date,ssl_start_date,ssl_end_date,ssl_domain_name,usage) {
+        $('#update_id').val(id);
+        $('#update_domain_name').val(domain_name);
+        $('#update_domain_end_date').val(end_date);
+        $('#update_ssl_start_date').val(ssl_start_date);
+        $('#update_ssl_end_date').val(ssl_end_date);
+        $('#update_ssl_domain_name').val(ssl_domain_name);
+        $('#update_usage').val(usage);
+        $('#update_id').attr('placeholder',id);
+        $('#update_ssl_start_date').attr('placeholder', ssl_start_date);
+        $('#update_domain_name').attr('placeholder',domain_name);
+        $('#update_domain_end_date').attr('placeholder', end_date);
+        $('#update_ssl_end_date').attr('placeholder',ssl_end_date);
+        $('#update_usage').attr('placeholder', usage);
+        $('#update_ssl_domain_name').attr('placeholder', ssl_domain_name);
+    }
+
+    function update_domain(){
+        var domain_name = $('#update_domain_name').val();
+        var end_date = $('#update_domain_end_date').val();
+        var ssl_start_date = $('#update_ssl_start_date').val();
+        var ssl_end_date =  $('#update_ssl_end_date').val();
+        var ssl_domain_name = $('#update_ssl_domain_name').val();
+        var usage = $('#update_usage').val();
+        var update_url = "/domain/"+$('#update_id').val()+"/"
+
+        $.ajax({
+            type: "PUT",
+            dataType: "json",
+            contentType:"application/json",
+            url: update_url,
+            data: JSON.stringify({"domain_name": domain_name, "end_date": end_date, "ssl_end_date": ssl_end_date ,
+                "ssl_domain_name": ssl_domain_name, "ssl_start_date":ssl_start_date, "usage": usage, 'csrfmiddlewaretoken': getCookie('csrftoken')}),
+            success: function (result) {
+                console.log(result);
+                window.location.href = "/";
+                location.reload(true);
+            }
+        })
+    }
+    </script>
+{% endblock %}

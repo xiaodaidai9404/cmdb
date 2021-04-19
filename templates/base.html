@@ -1,0 +1,45 @@
+{% load static %}
+{% load cache %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Access-Control-Allow-Origin" content="*" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>{% block title %}CMDB{% endblock %}</title>
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="shortcut icon" type="image/png" href="/static/image/favicon.ico">
+    <link rel="stylesheet" href="{% static "bootstrap/css/bootstrap.min.css" %}">
+    <link rel="stylesheet" href="{% static "css/font-awesome.min.css" %}">
+    <link rel="stylesheet" href="{% static "dist/css/AdminLTE.min.css" %}">
+    <link rel="stylesheet" href="{% static "dist/css/skins/_all-skins.min.css" %}">
+    <link rel="stylesheet" href="{% static "plugins/iCheck/flat/blue.css" %}">
+    <link rel="stylesheet" href="{% static "css/ionicons.min.css" %}">
+    <script src="{% static "plugins/jQuery/jQuery-2.1.4.min.js" %}"></script>
+    <script src="{% static "bootstrap/js/bootstrap.js" %}"></script>
+    <script src="{% static "js/jquery.noty.packaged.min.js" %}"></script>
+    <script src="{% static "js/myqccr.js" %}"></script>
+    {% block css %}
+    {% endblock %}
+    <style>
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            color: #333;
+        }
+        #query span.select2-selection__placeholder {
+            line-height: 35px;
+        }
+    </style>
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+    {% include "base_header.html" %}
+    {% include "base_sidebar.html" %}
+    {% block content %}
+    {% endblock %}
+    {% include "base_footer.html" %}
+    {% block js %}
+    {% endblock %}
+</div>
+</body>
+
+</html>

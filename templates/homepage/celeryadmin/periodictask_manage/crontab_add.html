@@ -1,0 +1,57 @@
+<div class="modal fade" id="modal-add-crontab">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span></button>
+        <h4 class="box-title">同步</h4>
+      </div>
+      <div class="add-crontab" id="add-crontab">
+          <form class="form-horizontal" method="post" id="add-crontab-form">
+                {% csrf_token %}
+                <div class="box-body">
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label">minute</label>
+                    <div class="col-sm-6">
+                      <input type="text" class="form-control" id="add_crontab_minute" name="add_crontab_minute" placeholder='*/15 每15分钟 * 每分钟' required>
+                    </div>
+                    <!-- /.input group -->
+                  </div>
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label">hour</label>
+                    <div class="col-sm-6">
+                      <input type="text" class="form-control" id="add_crontab_hour" name="add_crontab_hour" placeholder='*/3 每三小时 3 每天的三点'>
+                    </div>
+                  </div>
+                  <!-- /.form group -->
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label">day_of_week</label>
+		    <div class="col-sm-6">
+                      <input type="text" class="form-control" id="add_crontab_dayweek" name="add_crontab_dayweek" placeholder='mon 周一 tue 周二 wed 周三 thu 周四 fri 周五 sat 周六 sun 周日' required>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label">day_of_month</label>
+                    <div class="col-sm-6">
+                      <input type="text" class="form-control" id="add_crontab_daymonth" name="add_crontab_daymonth" placeholder='2 每月的第二天 1-7,15-21 每月的第一周和第三周'>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label">month_of_year</label>
+                    <div class="col-sm-6">
+                      <input type="text" class="form-control" id="add_crontab_monthyear" name="add_crontab_monthyear" placeholder='5 每年的第五个月'>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-default pull-left" data-dismiss="modal">取消</button>
+                  <button type="button" class="btn btn-primary btn-addcrontab-confirm">确认</button>
+                </div>
+              </form>
+        </div>
+        <!-- /.col -->
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>

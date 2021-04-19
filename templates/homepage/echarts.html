@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ECharts</title>
+    <!-- 引入 echarts.js -->
+    {% load staticfiles %}
+{% load i18n %}
+
+<script type="text/javascript" src="{% static "js/echarts.min.js"%}"></script>
+</head>
+<body>
+    <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+    <div id="main" style="width: 1000px;height:400px;"></div>
+    <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('main'));
+
+        // 指定图表的配置项和数据
+        var option = {
+            title: {
+            text: '国家'
+            },
+    tooltip: {
+        trigger: 'axis'
+    },
+    legend: {
+        data:{{ country|safe}}
+    },
+    grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+    },
+    toolbox: {
+        feature: {
+            saveAsImage: {}
+        }
+    },
+    xAxis: {
+        type: 'category',
+        boundaryGap: false,
+        data: {{ weekday_day|safe }}
+    },
+    yAxis: {
+        type: 'value'
+    },
+    series: [
+        {
+            name:"{{ country1|safe }}",
+            type:'line',
+            stack: '',
+            data:{{ country1_access_list|safe }}
+        },
+        {
+            name:"{{ country2|safe }}",
+            type:'line',
+            stack: '',
+            data:{{ country2_access_list|safe }}
+        },
+        {
+            name:"{{ country3|safe }}",
+            type:'line',
+            stack: '',
+            data:{{ country3_access_list|safe }}
+        },
+        {
+            name:"{{ country4|safe }}",
+            type:'line',
+            stack: '',
+            data:{{ country4_access_list|safe }}
+        },
+        {
+            name:"{{ country5|safe }}",
+            type:'line',
+            stack: '',
+            data:{{ country5_access_list|safe }}
+        }
+    ]
+};
+
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+    </script>
+</body>
+</html>
+

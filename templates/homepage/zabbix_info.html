@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+
+{% load staticfiles %}
+{% load i18n %}
+
+{% block css%}
+    <link rel="stylesheet" href="{% static "bootstrap/css/bootstrap.min.css" %}">
+    <link rel="stylesheet" href="{% static "css/font-awesome.min.css" %}">
+    <link rel="stylesheet" href="{% static "dist/css/AdminLTE.min.css" %}">
+    <link rel="stylesheet" href="{% static "dist/css/skins/_all-skins.min.css" %}">
+    <link rel="stylesheet" href="{% static "plugins/iCheck/flat/blue.css" %}">
+    <link rel="stylesheet" href="{%static "css/ionicons.min.css" %}">
+    <link rel="stylesheet" href="{% static "plugins/datatables/dataTables.bootstrap.css"%}">
+
+    <link rel="stylesheet" href="{% static "css/select2.min.css"%}">
+    <link rel="stylesheet" href="{% static "css/style.css"%}">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="{% static "js/html5shiv.min.js" %}"></script>
+    <script src="{% static "js/respond.min.js" %}"></script>
+    <![endif]-->
+    <style>
+        .nav-tabs {
+            background-color: #eee;
+        }
+        .form-group {
+            margin-top: 25px;
+        }
+    </style>
+    <script>
+    function load() {
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/zabbix_info/",
+            data: {'csrfmiddlewaretoken': getCookie('csrftoken')},
+            success: function (response) {
+                if (response.code == 200) {
+                    console.log(response);
+                    {#                                            定义tbody以及将tbody追加为空#}
+                    var tbody = $("#StdoutTable tbody");
+                    tbody.html('');
+                    {#                                            插入数据#}
+
+                    if ($('#StdoutTable').hasClass('dataTable')) {
+                        var dttable = $('#StdoutTable').dataTable();
+                        dttable.fnClearTable(); //清空一下table
+                        dttable.fnDestroy(); //还原初始化了的datatable
+                    }
+                    for (var item of response.result) {
+                        var tr = `
+                        <tr role="row" class="">
+                                            <td>${item.ip}</td>
+                                            <td>${item.memory_10min_min}</td>
+                                            <td>${item.upload_10min_max}</td>
+                                            <td>${item.memory_free_min}</td>
+                                            <td>${item.upload_max}</td>
+                                            <td><a href="${item.zabbix_url}" target="_blank">zabbix监控图</a></td>
+                                                </tr>`;
+                        tbody.append($(tr));
+                    }
+                    $('#StdoutTable').dataTable();
+                }
+                else {
+                    alert(response.msg);
+                }
+            }
+        })
+    }
+    </script>
+{% endblock %}
+{% block content %}
+    <div class="fakeloader"></div>
+    <div class="content-wrapper">
+    <section class="content-header">
+        <h1>
+            服务器负载
+        </h1>
+
+        <ol class="breadcrumb">
+              <li class="active"><a href="/"><i class="fa fa-dashboard"></i> 首页</a></li>
+              <li>服务器负载</li>
+        </ol>
+    </section>
+         <div class="row">
+                <div class="col-xs-12">
+                    <div id="project-content" class="nav-tabs-custom">
+                        <div class="tab-content">
+                            <div  id="project_manage">
+                                <div class="box-body">
+                                <div class="input-group col-xs-12">
+                                    <table id="StdoutTable" class="table table-bordered" style="table-layout: fixed"; >
+                                        <thead>
+                                        <tr>
+                                            <th width="20%">ip</th>
+                                            <th width="15%">内存剩余最小(10m)</th>
+                                            <th width="15%">负载最大(10m)</th>
+                                            <th width="15%">内存剩余最小(24h)</th>
+                                            <th width="15%">负载最大(24h)</th>
+                                            <th width="20%">监控图</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+    </div>
+ <body onload="load()"></body>
+{% endblock %}
+
+{% block js %}
+<script src="{%static "plugins/jQuery/jQuery-2.1.4.min.js" %}"></script>
+<script src="{% static "js/jquery-ui.min.js" %}"></script>
+<script src="{%static "dist/js/app.min.js" %}"></script>
+<script src="{% static "plugins/datatables/jquery.dataTables.min.js" %}"></script>
+<script src="{% static "plugins/datatables/dataTables.bootstrap.min.js" %}"></script>
+<script src="{% static "plugins/iCheck/icheck.min.js" %}"></script>
+<script src="{% static "js/myqccr.js" %}"></script>
+<script src="{% static "js/select2.min.js" %}"></script>
+<script src="{% static "js/jquery.Qalert.js" %}"></script>
+{% endblock %}

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="refresh" content="120">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>集中运维服务管理平台 | 登录</title>
+    {% load staticfiles %}
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <!-- Bootstrap 3.3.5 -->
+    <link rel="stylesheet" href="{% static "bootstrap/css/bootstrap.min.css"%}" >
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="{% static "css/font-awesome.min.css"%}">
+
+	<link href="{% static 'css/animate.min.css' %}" rel="stylesheet" />
+	<link href="{% static 'css/style.min.css' %}" rel="stylesheet" />
+	<link href="{% static 'css/style-responsive.min.css' %}" rel="stylesheet" />
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="{% static "js/html5shiv.min.js"%}"></script>
+        <script src="{% static "js/respond.min.js"%}"></script>
+    <![endif]-->
+    <style>
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus {
+            box-shadow:0 0 0 60px #fff inset;
+            -webkit-text-fill-color: #333;
+        }
+        #div1 a{width:100px;margin: 0 auto;display:block;}
+    </style>
+  </head>
+  <body class="hold-transition login-page">
+    <!-- begin #page-loader -->
+	<div id="page-loader" class="fade in"><span class="spinner"></span></div>
+	<!-- end #page-loader -->
+
+	<div class="login-cover">
+	    <div class="login-cover-image"><img src="{% static 'img/bg/bg-8.jpg' %}" data-id="login-cover-image" alt="" /></div>
+	    <div class="login-cover-bg"></div>
+	</div>
+	<!-- begin #page-container -->
+	<div id="page-container" class="fade">
+	    <!-- begin login -->
+        <div class="login login-v2" data-pageload-addclass="animated flipInX">
+            <!-- begin brand -->
+            <div class="login-header">
+                <div class="brand">
+                    <span class="logo"></span> 富聊CMDB平台
+                </div>
+                <div class="icon">
+                    <i class="fa fa-sign-in"></i>
+                </div>
+            </div>
+            <!-- end brand -->
+            <div class="login-content">
+                <form name="loginform" method="post" onsubmit="return checkempty();" class="margin-bottom-0" autocomplete="off">
+                    {% csrf_token %}
+                    <div class="form-group m-b-5">
+                        <input type="text" id='username' name='username' class="form-control input-lg" placeholder="***@ipaychat.com" />
+                    </div>
+                    <div class="m-b-15">
+                        用户名为<span style="font-weight: bold;color: white">你的企业邮箱</span>（用户名）
+                    </div>
+                    <div class="form-group m-b-5">
+                        <input type="password" id='password' name='password' class="form-control input-lg" placeholder="ldap密码" />
+                    </div>
+                    <div class="m-b-15">
+                        密码为<span style="font-weight: bold;color: white">ldap密码</span>
+                    </div>
+                    <div class="login-buttons">
+                        <button type="submit" class="btn btn-success btn-block btn-lg" name="login">ldap登录</button>
+{#                        <button type='button' class="btn btn-warning btn-block btn-lg" name="register" onclick="window.location.href = '/regist'">没有账号？</button>#}
+{#                                           <a href="/password/forget/"><small>Forgot password? </small></a>#}
+                    </div>
+                </form>
+            </div>
+        </div>
+	</div>
+	<!-- end page container -->
+
+    <script>
+        var alert_msg = {{ alert_msg }}
+        if (alert_msg == 1){
+            alert ('用户名或密码不能为空')}
+        if (alert_msg == 2){
+            // alert ('账号或密码错误,请尝试使用五位的工号登录(如01548) 密码为原来密码')};
+            alert ('认证失败，请重试；如多次尝试登录失败，请联系系统管理员')}
+        if (alert_msg == 3){
+            alert ('用户登录类型不支持,请联系系统管理员')}
+            if (alert_msg == 4){
+            alert ('该用户已存在')}
+            if (alert_msg == 5){
+            alert ('注册成功')}
+            if (alert_msg == 6){
+            alert ('ldap认证失败')}
+    </script>
+
+    <script>
+        function checkempty(){
+            if ($("#username").val() ==""){
+                alert('用户名不能为空');
+                 $("#username").focus();
+                return false;
+            }
+            if ($("#password").val() ==""){
+                alert('密码不能为空');
+                 $("#password").focus();
+                return false;
+            }
+            return true;
+        }
+    </script>
+
+    <script>
+        function regist() {
+                  $.ajax({
+            type: "GET",
+            url: "/regist",
+        })
+        }
+    </script>
+
+    <!-- jQuery 2.1.4 -->
+    <script src="{% static "js/jQuery-2.1.4.min.js" %}"></script>
+    <!-- Bootstrap 3.3.5 -->
+    <script src="{% static "js/bootstrap.min.js" %}"></script>
+    <script src="{% static "js/jquery-migrate-1.1.0.min.js" %}"></script>
+	<script src="{% static "js/jquery-ui.min.js" %}"></script>
+	<script src="{% static "js/color_admin_apps.min.js" %}"></script>
+    <script>
+		$(document).ready(function() {
+			App.init();
+		});
+	</script>
+  </body>
+</html>

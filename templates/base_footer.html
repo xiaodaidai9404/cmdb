@@ -1,0 +1,38 @@
+<footer class="main-footer">
+    <div class="pull-right hidden-xs">
+        <b>Version</b> 0.0.1
+    </div>
+    <strong>Copyright &copy; 2018<a href="http://www.ipaychat.com/">富聊</a>.</strong> All rights reserved.
+</footer>
+
+<div class="modal fade" id="bind_email_modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">修改邮箱：</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label for="email_address" class="col-sm-2 control-label">邮箱地址<i style='color:red'>*</i></label>
+                        <div class="col-xs-8 align-left">
+                            {#                            <input type="text" class="form-control" name="email_address" id="email_address" placeholder="请输入合法的电子邮箱地址">#}
+                            <div class="input-group" id="email_address_group">
+                                <input type="email" name="email_address" id="email_address" class="form-control"
+                                       style="text-align: right" placeholder="请输入合法的电子邮箱地址">
+                                <span class="input-group-addon" id="">@qccr.com</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="bind_email(this)">确定</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+

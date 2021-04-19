@@ -1,0 +1,395 @@
+{% extends "base.html" %}
+
+
+{% load staticfiles %}
+{% load i18n %}
+
+{% block css%}
+    <link rel="stylesheet" href="{% static "bootstrap/css/bootstrap.min.css" %}">
+    <link rel="stylesheet" href="{% static "css/font-awesome.min.css" %}">
+    <link rel="stylesheet" href="{% static "dist/css/AdminLTE.min.css" %}">
+    <link rel="stylesheet" href="{% static "dist/css/skins/_all-skins.min.css" %}">
+    <link rel="stylesheet" href="{% static "plugins/iCheck/flat/blue.css" %}">
+    <link rel="stylesheet" href="{%static "css/ionicons.min.css" %}">
+    <link rel="stylesheet" href="{% static "plugins/datatables/dataTables.bootstrap.css"%}">
+
+    <link rel="stylesheet" href="{% static "css/select2.min.css"%}">
+    <link rel="stylesheet" href="{% static "css/style.css"%}">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="{% static "js/html5shiv.min.js" %}"></script>
+    <script src="{% static "js/respond.min.js" %}"></script>
+    <![endif]-->
+    <style>
+        .nav-tabs {
+            background-color: #eee;
+        }
+        .form-group {
+            margin-top: 25px;
+        }
+
+        .col-center-block {
+    float: none;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+        }
+
+    </style>
+    <script type="text/javascript">
+        function del_user(username) {
+            var c = confirm("确定删除吗？");
+            if (c == true) {
+                $.ajax({
+                    type: "POST",
+                    dataType: "json",
+                    url: "/del/systemuser/",
+                    data: {"username":username, 'csrfmiddlewaretoken': getCookie('csrftoken')},
+                    success: function (result) {
+                        if (result.code != 200) {
+                            alert(result.msg);
+                        }
+                    window.location.href = "/";
+                    location.reload(true);
+                    }
+                })
+            }
+        }
+{#        function add_user() {#}
+{#            var username = $('#username').val();#}
+{#            var group = $('#grouptype').val()#}
+{#            var password = $('#password').val()#}
+{#            var email = $('#email').val()#}
+{#            var c = confirm("确定添加吗？");#}
+{#            if (c == true) {#}
+{#                $.ajax({#}
+{#                    type: "POST",#}
+{#                    dataType: "json",#}
+{#                    url: "/add/systemuser/",#}
+{#                    data: {"username":username,"group":group,"password":password,"email":email,'csrfmiddlewaretoken': getCookie('csrftoken')},#}
+{#                    success: function (result) {#}
+{#                        if (result.code != 200) {#}
+{#                            alert(result.msg);#}
+{#                        }#}
+{#                    window.location.href = "/";#}
+{#                    location.reload(true);#}
+{#                    }#}
+{#                })#}
+{#            }#}
+{#        }#}
+
+        function edit_group(){
+            var group = $('#update_grouptype').val()
+            var user = $('#update_user').val()
+            var c = confirm("确定修改吗? ");
+            if (c == true){
+                $.ajax({
+                    type: "POST",
+                    dataType: "json",
+                    url: "/update/systemuser/",
+                    data: {"username":user,"group":group,'csrfmiddlewaretoken': getCookie('csrftoken')},
+                    success: function (result) {
+{#                        if (result.code != 200) {#}
+                            alert(result.msg);
+{#                        }#}
+                        window.location.href = "/";
+                        location.reload(true);
+                    }
+                })
+            }
+        }
+
+        //触发模态框的同时调用此方法
+    function editInfo(user,group) {
+        //向模态框中传值
+        $('#update_user').attr('placeholder', user);
+        $('#update_user').val(user);
+        document.getElementById("update_grouptype").value=group;
+{#        $('#update_grouptype select option:selected').val(group);#}
+    }
+
+
+    function edit_permission(){
+        var user = $('#permission_user').val();
+        var permissionList = $('input[name="permission"]:checked');
+        var permissions = '';
+        $.each(permissionList, function (index) {
+        if (index+1 == permissionList.length) {   // 最后一位，不加逗号
+            permissions += permissionList[index].value;
+        } else {
+            permissions += permissionList[index].value + ',';
+        }
+    });
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/change/permission",
+            data: {"username":user, "permissions":permissions, 'csrfmiddlewaretoken': getCookie('csrftoken')},
+            success: function (result) {
+                alert(result.msg);
+                window.location.href = "/";
+                location.reload(true);
+            }
+        })
+    }
+
+            //触发模态框的同时调用此方法
+    function editPrimissionInfo(user) {
+        //初始化所有勾选框为空
+        var permission_list = new Array("can_server_url","can_soft_url","can_env_url","can_auth_url")
+        for (x in permission_list)
+        {
+            permissionid = permission_list[x]
+            var el = document.getElementById(permissionid)
+            el.checked = false
+        }
+        //向模态框中传值
+        $('#permission_user').attr('placeholder', user);
+        $('#permission_user').val(user);
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/write/permission",
+            data: {"username":user,'csrfmiddlewaretoken': getCookie('csrftoken')},
+            success: function (result){
+                for(var i=0;i<result.msg.length;i++){
+                    permissionid=result.msg[i]
+                    var el = document.getElementById(permissionid)
+                    el.checked = true
+                }
+            }
+        })
+    }
+
+    function passwd_generation() {
+        $.ajax({
+            type: "GET",
+            dataType: "json",
+            url: "/create/password/",
+            success: function (result) {
+                $('#password').val(result.password)
+            }
+        })
+    }
+
+</script>
+
+{% endblock %}
+{% block content %}
+    <div class="fakeloader"></div>
+    <div class="content-wrapper">
+    <section class="content-header">
+        <h1>
+            系统用户管理
+        </h1>
+
+        <ol class="breadcrumb">
+              <li class="active"><a href="/"><i class="fa fa-dashboard"></i> 首页</a></li>
+              <li>所有用户</li>
+        </ol>
+    </section>
+         <div class="row">
+                <div class="col-xs-12">
+                    <div id="project-content" class="nav-tabs-custom">
+                        <div class="tab-content">
+{#                        <button class="btn btn-info" data-toggle="modal" data-target="#adduser">添加用户</button>#}
+                            <div  id="project_manage">
+                                <div class="box-body">
+                                    <table id="USERTable" class="table table-bordered table-striped">
+                                        <thead>
+                                        <tr>
+                                            <th>用户名</th>
+                                            <th>用户组</th>
+                                            <th>email</th>
+                                            <th>操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% if result %}
+                                            {% for item in result %}
+                                            <tr role="row" class="">
+                                            <td>{{ item.username }}</td>
+                                                <td>{{ item.group }}</td>
+                                                <td>{{ item.email }}</td>
+                                                <td>
+                                                <form method="post" id="Changeform">{% csrf_token %}
+                                                 <button type="button" class="btn btn-danger btn-xs" name="user_del" onclick="del_user('{{ item.username }}')"><i class="fa fa-fw fa-times"></i>删除用户</button>
+                                                      <button type="button" data-toggle="modal" class="btn btn-success btn-xs" id="{{ item.user }}" data-target="#updatepasswd" onclick="editInfo(
+'{{ item.username }}','{{ item.group }}')"><i class="glyphicon glyphicon-pencil"></i>修改用户组</button>
+                                                    <button type="button" data-toggle="modal" class="btn btn-success btn-xs" id="{{ item.user }}" data-target="#updatepermission" onclick="editPrimissionInfo(
+'{{ item.username }}')"><i class="glyphicon glyphicon-pencil"></i>修改用户访问权限</button>
+                                                </form>
+                                            </td>
+                                            </tr>
+                                            {% endfor %}
+                                        {% endif %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal -->
+{#    <div class="modal fade" id="adduser" tabindex="-1" role="dialog" aria-labelledby="adduserLabel" aria-hidden="true">#}
+{#    <div class="modal-dialog">#}
+{#        <div class="modal-content">#}
+{#            <div class="modal-header">#}
+{#                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>#}
+{#                <h4 class="modal-title">添加用户</h4>#}
+{#            </div>#}
+{##}
+{#            <div class="tab-content">#}
+{#                <div class="tab-pane active">#}
+{#                    <form class="form-horizontal" method="post" role="form">{% csrf_token %}#}
+{#                        <div class="form-group">#}
+{#                            <label class="col-sm-4 control-label">用户名</label>#}
+{#                            <div class="col-sm-6">#}
+{#                                <input type="text" name="username" id="username" class="form-control" placeholder="zhangsan" required pattern="[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+">#}
+{#                            </div>#}
+{#                             <div class="form-group">#}
+{#                            <label class="col-sm-4 control-label" for="grouptype">用户组</label>#}
+{#                             <div class="col-sm-6 control-group">#}
+{#                                    <select id="grouptype" class="selectpicker show-tick form-control">#}
+{#                                        <option value="ops">运维</option>#}
+{#                                        <option value="test">测试</option>#}
+{#                                        <option value="spread">推广</option>#}
+{#                                    </select>#}
+{#                             </div>#}
+{#                             </div>#}
+{#                            <label class="col-sm-4 control-label">密码</label>#}
+{#                            <div class="col-sm-6">#}
+{#                                <input type="text" name="password" id="password" class="form-control" placeholder="password">#}
+{#                            </div>#}
+{#                            <label class="col-sm-4 control-label">邮箱</label>#}
+{#                            <div class="col-sm-6">#}
+{#                                <input type="email" name="email" id="email" class="form-control" placeholder="admin@instanza.org">#}
+{#                                <center><button type="button" onclick="passwd_generation()" class="btn btn-sm btn-info">生成随机密码</button></center>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                        <div class="modal-footer">#}
+{#                            <button type="button" class="btn btn-default"#}
+{#                                    data-dismiss="modal">关闭</button>#}
+{#                            <button type="submit" class="btn btn-primary"#}
+{#                                    name="redis_add" onclick="add_user()" >添加</button>#}
+{#                        </div>#}
+{#                    </form>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#        <!-- /.modal-content -->#}
+{#    </div>#}
+{#    <!-- /.modal-dialog -->#}
+{#    </div><!-- /.modal -->#}
+
+    <!-- Modal -->
+    <div class="modal fade" id="updatepasswd" tabindex="-1" role="dialog" aria-labelledby="updatepasswdLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">修改用户组</h4>
+            </div>
+
+            <div class="tab-content">
+                <div class="tab-pane active">
+                    <form class="form-horizontal" method="post" role="form">{% csrf_token %}
+{#                            <input type="hidden" name= "update_user" id="update_user" value="">#}
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">用户名</label>
+                            <div class="col-sm-6">
+                                <input type="text" name="update_user" id="update_user" class="form-control" readonly>
+                            </div>
+                            <label class="col-sm-4 control-label" for="update_grouptype">用户组</label>
+                             <div class="col-sm-6 control-group">
+                                    <select id="update_grouptype" class="selectpicker show-tick form-control">
+                                        <option value="ops">运维</option>
+                                        <option value="dev">开发</option>
+                                        <option value="test">测试</option>
+                                    </select>
+                             </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default"
+                                    data-dismiss="modal">关闭</button>
+                            <button type="button" class="btn btn-primary"
+                                    name="redis_add" onclick="edit_group()">修改</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+    <div class="modal fade" id="updatepermission" tabindex="-1" role="dialog" aria-labelledby="updatepermissionLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">修改用户权限</h4>
+            </div>
+            <div class="tab-content">
+                <div class="tab-pane active">
+                    <form class="form-horizontal" method="post" role="form">{% csrf_token %}
+                        <div class="form-group">
+                        <label class="col-sm-4 control-label">用户名</label>
+                         <div class="col-sm-6">
+                        <input type="text" name="permission_user" id="permission_user" class="form-control" readonly>
+                         </div>
+                        <div class="checkbox col-sm-6 col-center-block">
+                            <label><input type="checkbox" name="permission" value="can_server_url" id="can_server_url">服务器信息</label>
+                        </div>
+                        <div class="checkbox col-sm-6 col-center-block">
+                            <label><input type="checkbox" name="permission" value="can_soft_url" id="can_soft_url">技术栈信息</label>
+                        </div>
+                        <div class="checkbox col-sm-6 col-center-block">
+                        <label><input type="checkbox"  name="permission" value="can_env_url" id="can_env_url">测试环境</label>
+                        </div>
+                         <div class="checkbox col-sm-6 col-center-block">
+                        <label><input type="checkbox"  name="permission" value="can_auth_url" id="can_auth_url"> 用户权限</label>
+                        </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default"
+                                    data-dismiss="modal">关闭</button>
+                            <button type="button" class="btn btn-primary"
+                                    name="permission_change" onclick="edit_permission()">保存</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+
+
+{% endblock %}
+
+{% block js %}
+<script src="{%static "plugins/jQuery/jQuery-2.1.4.min.js" %}"></script>
+<script src="{% static "js/jquery-ui.min.js" %}"></script>
+<script src="{%static "dist/js/app.min.js" %}"></script>
+<script src="{% static "plugins/datatables/jquery.dataTables.min.js" %}"></script>
+<script src="{% static "plugins/datatables/dataTables.bootstrap.min.js" %}"></script>
+<script src="{% static "plugins/iCheck/icheck.min.js" %}"></script>
+<script src="{% static "js/myqccr.js" %}"></script>
+<script src="{% static "js/select2.min.js" %}"></script>
+<script src="{% static "js/jquery.Qalert.js" %}"></script>
+<script type="text/javascript">
+    $('#USERTable').DataTable();
+</script>
+{% endblock %}

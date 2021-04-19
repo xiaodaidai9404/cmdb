@@ -1,0 +1,96 @@
+<div class="modal fade" id="modal-add-periodtask">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span></button>
+        <h4 class="box-title">添加任务</h4>
+      </div>
+      <div class="add-task" id="add-task">
+    	<form class="form-horizontal" method="post" id="add-periodtask-form">
+                {% csrf_token %}
+                <div class="box-body">
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label">任务名称</label>
+                    <div class="col-sm-6">
+                      <input type="text" class="form-control" id="add_periodtask_name" name="add_periodtask_name" placeholder='任务名称' required>
+                    </div>
+                    <!-- /.input group -->
+                  </div>
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label">任务(已注册)</label>
+			    <div class="col-sm-6">
+                      <select name="add_periodtask_task_registed" id="add_periodtask_task_registed" style="height:30px;">
+ 			<option>----------</option>
+			{% for registed_task in registed_tasks %}
+ 			<option>{{ registed_task }}</option>
+                        {% endfor %}
+		      </select>
+                    </div>
+                  </div>
+                  <!-- /.form group -->
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label">任务(自填写)</label>
+		    <div class="col-sm-6">
+                      <input type="text" class="form-control" id="add_periodtask_task_custom" name="add_periodtask_task_custom" placeholder='app.tasks.def 填写app 任务名' required><br>
+		      * <font color=red>以上任务（已注册）与任务（自填写）只能选一项，任务（自填写）需要在代码中定义该任务</font>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label">启用</label>
+                    <div class="col-sm-6">
+                      <input type="checkbox" id="add_periodtask_enabled" name="add_periodtask_enabled" value="1">
+                    </div>
+                  </div>
+		  <div class="form-group" id="div_crontab">
+                    <label class="col-sm-3 control-label">crontab</label>
+                    <div class="col-sm-6">
+                        <select name="crontab_id" id="crontab_id" style="height:30px;">
+                                <option value="">----------</option>
+				{% for crontab in crontabs %}
+                                <option value="{{ crontab.0 }}-{{ crontab.1 }} {{ crontab.2 }} {{ crontab.3 }} {{ crontab.4 }} {{ crontab.5 }}">{{ crontab.1 }} {{ crontab.2 }} {{ crontab.3 }} {{ crontab.4 }} {{ crontab.5 }}</option>
+                                {% endfor %}
+                        </select>
+                    </div>
+                  </div>
+                  <div class="form-group" id="div_interval">
+                    <label class="col-sm-3 control-label">interval</label>
+                    <div class="col-sm-6">
+                        <select name="interval_id" id="interval_id" style="height:30px;">
+                                <option value="">----------</option>
+				{% for interval in intervals %}
+                                <option value="{{ interval.0 }}-{{ interval.1 }} {{ interval.2 }}">every {{ interval.1 }} {{ interval.2 }}</option>
+                                {% endfor %}
+                        </select><br>
+			* <font color=red>以上crontab定时执行与internal循环执行只能选一项，若不存在所需时间，请先添加</font>	
+                    </div>
+                  </div>
+		  <div class="form-group">
+                    <label class="col-sm-3 control-label">参数</label>
+                    <div class="col-sm-6">
+			<textarea name="add_periodtask_arguments" cols="60" rows="6">[]</textarea><br>
+			<font color=red>* 请填写json格式字符串</font>
+                    </div>
+                  </div>
+		  <!--<div class="form-group">
+                    <label class="col-sm-3 control-label">过期时间</label>
+		    <div class="input-group col-sm-6">
+                      <div class="input-group-addon">
+                        <i class="fa fa-clock-o"></i>
+		    </div>
+                    <input type="text" class="form-control pull-left" id="reservationtime">
+                  </div>-->
+                <!-- /.input group -->
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-default pull-left" data-dismiss="modal">取消</button>
+                  <button type="button" class="btn btn-primary btn-addperiodtask-confirm">确认</button>
+                </div>
+              </form>
+      </div>
+        <!-- /.col -->
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>

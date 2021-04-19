@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{%load staticfiles%}
+
+{% block css%}
+	<link rel="stylesheet" href="{% static "bootstrap/css/bootstrap.min.css" %}">
+	<link rel="stylesheet" href="{% static "css/font-awesome.min.css" %}">
+	<link rel="stylesheet" href="{% static "dist/css/AdminLTE.min.css" %}">
+	<link rel="stylesheet" href="{% static "dist/css/skins/_all-skins.min.css" %}">
+	<link rel="stylesheet" href="{% static "plugins/iCheck/flat/blue.css" %}">
+	<link rel="stylesheet" href="{%static "css/ionicons.min.css" %}">
+ 	<link rel="stylesheet" href="{% static "plugins/datatables/dataTables.bootstrap.css"%}">
+    <link rel="stylesheet" href="{% static "plugins/datepicker/datepicker.css"%}">
+    <link rel="stylesheet" href="{% static "css/select2.min.css"%}">
+{#	<link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/css/select2.min.css" rel="stylesheet" />#}
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="{% static "js/html5shiv.min.js" %}"></script>
+        <script src="{% static "js/respond.min.js" %}"></script>
+    <![endif]-->
+    <style>
+    .head-box{min-height:100px;}
+
+    .loader {
+          position: fixed;
+          left: 0px;
+          top: 0px;
+          width: 100%;
+          height: 100%;
+          z-index: 9999;
+         background: url({% static 'image/reload.gif' %}) 50% 50% no-repeat rgb(249, 249, 249);
+    }
+
+
+    </style>
+    <script>
+    function write_all_software(){
+        $.ajax({
+                    type: "GET",
+                    dataType: "json",
+                    url: "/get/all_software/",
+                    success: function (result) {
+                        var software_list = result['all_software'];
+                        var obj = document.getElementById("select_type");
+                        for (x in software_list){
+                            software = software_list[x]
+                            obj.add(new Option(software,software));
+                        };
+                        console.log(result);
+                    }
+                })
+    }
+
+    function addCheckBox(){
+      var server_name = $('#update_server_name').val();
+      var html='';
+      $.ajax({
+          type: "GET",
+          dataType: "json",
+          url: "/get/usage/int_ip/",
+          data: {"usage":server_name,'csrfmiddlewaretoken': getCookie('csrftoken')},
+          success: function (result) {
+              var server_ip_list = result['server']['ip_list'];
+              for (x in server_ip_list) {
+                  server_ip = server_ip_list[x]
+                  server_id = "server" + x
+                      html += '<label class="checkbox-inline" ><input type="checkbox" name="serverip" value=' + server_ip + ' id=' + server_id + '>' + server_ip + '</label>'
+
+                  var net_num = result['server']['net_proxy_net'];
+                  var intranet_num = result['server']['net_proxy_intranet'];
+
+                  if (net_num==0) {
+                      document.getElementById("net_proxy_net").disabled = true;
+                  }
+
+                  if (intranet_num==0) {
+                      document.getElementById("net_proxy_intranet").disabled = true;
+                  }
+
+                  $('#server_update').html(html);
+              }
+
+          }
+      })
+    }
+
+
+    function edit_server() {
+        //向模态框中传值
+        var server = $('#select_type').val();
+        $('#update_server_name').attr('placeholder', server);
+        $('#update_server_name').val(server);
+    }
+
+    function write_all_branch(){
+        $.ajax({
+                    type: "GET",
+                    dataType: "json",
+                    url: "/get/im_branch/",
+                    success: function (result) {
+                        var branch_list = result['all_branch'];
+                        var obj = document.getElementById("choice_branch");
+                        for (x in branch_list){
+                            branch = branch_list[x]
+                            obj.add(new Option(branch,branch));
+                        };
+                        document.reload.hidden=true;
+                        console.log(result);
+                    }
+                })
+    }
+
+    function online(){
+        var server_name = $('#update_server_name').val();
+        var branch_name = $('#choice_branch').val();
+        var server_ip_List = $('input[name="serverip"]:checked');
+        var ip = '';
+        $.each(server_ip_List, function (index) {
+            if (index + 1 == server_ip_List.length) {   // 最后一位，不加逗号
+                ip += server_ip_List[index].value;
+            } else {
+                ip += server_ip_List[index].value + ',';
+            }
+        });
+            var net = '';
+            var net_statu = document.getElementById("net_proxy_net").checked;
+            var intranet_statu = document.getElementById("net_proxy_intranet").checked;
+            if (net_statu == true) {
+                net += "net_proxy_net";
+            }
+            console.log(net);
+            if (intranet_statu == true) {
+                net += "net_proxy_intranet";
+            }
+            console.log(net)
+            var config_statu = $('input[name="configRadiosinline"]:checked')[0].value;
+
+            $.ajax({
+                    type: "POST",
+                    dataType: "json",
+                    url: "/im/server/go_online",
+                    data: {"server_name":server_name,"branch_name":branch_name,"ip":ip,"net":net,"config_statu":config_statu, 'csrfmiddlewaretoken': getCookie('csrftoken')},
+                    success: function (result) {
+                        console.log(result);
+                    }
+                })
+
+    }
+    </script>
+    {% block subcss %}
+    {% endblock %}
+{% endblock %}
+
+{% block content %}
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <h1>
+                IM程序更新
+                <small>IM程序更新</small>
+            </h1>
+            <ol class="breadcrumb">
+                <li class="active"><a href="/"><i class="fa fa-dashboard"></i> 首页</a></li>
+                <li>IM程序更新</li>
+            </ol>
+        </section>
+        <section class="content">
+            <!-- Small boxes (Stat box) -->
+            <div class="row">
+                <div class="col-xs-12">
+                    {% block subcontent %}
+                        <div id="project-content" class="nav-tabs-custom">
+                            <div class="tab-content">
+                                <div class="box-header row">
+                                    <h5>选择需要更新的程序</h5>
+                                    <div class="col-xs-4">
+                                    <select id="select_type" class="form-control">
+                                    </select>
+                                    </div>
+                                    <div class="col-xs-4">
+                                    <button type="button" class="btn btn-success" name="server_for_online" data-toggle="modal" data-target="#UpdateModal" onclick="edit_server();write_all_branch();addCheckBox()">开始更新</button>
+                                    </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <textarea id="make_log" class="form-control" rows="5"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        {% endblock %}
+                </div><!-- /col-xs-12 -->
+            </div>
+        </section><!-- /.content -->
+    </div><!-- /.content-wrapper -->
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="UpdateModal" tabindex="-1" role="dialog" aria-labelledby="addLable" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">IM服务更新</h4>
+            </div>
+
+            <div class="tab-content">
+                <div class="tab-pane active">
+                    <form class="form-horizontal" method="post" role="form">{% csrf_token %}
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">服务名</label>
+                            <div class="col-sm-6">
+                                <input type="text" id="update_server_name" class="form-control" disabled="disabled">
+                            </div>
+                            <label class="col-sm-4 control-label">选择分支</label>
+                            <div class="col-sm-6" >
+                                <select id="choice_branch" class="form-control">
+                                </select>
+                            </div>
+                            <div class="col-sm-1">
+                                <img name="reload" src={% static 'image/reload.gif' %} height="18" width="20">
+                            </div>
+                            <label class="col-sm-4 control-label">服务器选择</label>
+                            <div id="server_update" class="col-sm-6">
+                            </div>
+                            <label class="col-sm-4 control-label">服务组件选择</label>
+                            <div class="col-sm-6">
+                            <label class="checkbox-inline"><input type="checkbox" name="net_proxy_net" value="net_proxy_net" id="net_proxy_net">net_proxy_net</label>
+                            <label class="checkbox-inline"><input type="checkbox" name="net_proxy_intranet" value="net_proxy_intranet" id="net_proxy_intranet">net_proxy_intranet</label>
+                            </div>
+                            <label class="col-sm-4 control-label">配置文件更新</label>
+                            <div class="col-sm-6">
+                            <label class="radio-inline">
+                            <input type="radio" name="configRadiosinline" id="optionsRadios1" value="yes">yes
+                            </label>
+                            <label class="radio-inline">
+                            <input type="radio" name="configRadiosinline" id="optionsRadios2"  value="no" checked>no
+                            </label>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <div class="col-sm-8">
+                            <button type="button" class="btn btn-default"
+                                    data-dismiss="modal">关闭</button>
+                            <button type="button" class="btn btn-primary"
+                                    name="" onclick="online()">开始上线</button>
+                            </div>
+                        </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+     <body onload="write_all_software()"></body>
+{% endblock %}
+
+{% block js%}
+    <script src="{%static "plugins/jQuery/jQuery-2.1.4.min.js" %}"></script>
+    <script src="{% static "js/jquery-ui.min.js" %}"></script>
+    <script src="{%static "bootstrap/js/bootstrap.min.js" %}"></script>
+    <script src="{%static "dist/js/app.min.js" %}"></script>
+    <script src="{% static "plugins/datatables/jquery.dataTables.min.js" %}"></script>
+    <script src="{% static "plugins/datatables/dataTables.bootstrap.min.js" %}"></script>
+    <script src="{% static "plugins/iCheck/icheck.min.js" %}"></script>
+    <script src="{% static "js/popModal.js" %}"></script>
+    <script src="{% static "js/myqccr.js" %}"></script>
+    <script src="{% static "plugins/datetimepicker/bootstrap-datetimepicker.min.js" %}"></script>
+    <script src="{% static "plugins/datepicker/bootstrap-datepicker.js" %}"></script>
+    <script src="{% static "plugins/datepicker/locales/bootstrap-datepicker.zh-CN.js" %}"></script>
+
+{#    <script src="http://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js"></script>#}
+    <script src="{% static "js/select2.min.js" %}"></script>
+    <script type="text/javascript">
+    </script>
+{% endblock %}
